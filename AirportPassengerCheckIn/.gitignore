@@ -1,0 +1,42 @@
+
+# ==============================
+# Visual Studio
+# ==============================
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ==============================
+# .NET build artifacts
+# ==============================
+[Bb]in/
+[Oo]bj/
+
+# ==============================
+# NuGet
+# ==============================
+*.nupkg
+*.snupkg
+.nuget/
+
+# ==============================
+# Logs
+# ==============================
+*.log
+
+# ==============================
+# Local configuration and secrets
+# ==============================
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# ==============================
+# IDE and OS
+# ==============================
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
