@@ -1,3 +1,6 @@
+using AirportPassengerCheckIn.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace AirportPassengerCheckIn
 {
     public class Program
@@ -8,6 +11,9 @@ namespace AirportPassengerCheckIn
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddDbContext<ApplicationDbContext>(options => 
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            );
 
             var app = builder.Build();
 
