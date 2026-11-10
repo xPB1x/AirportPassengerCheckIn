@@ -4,8 +4,8 @@
     {
         public int Id { get; set; }
         public String FlightNumber { get; set; } = String.Empty;
-        public DateTime DepartureDateTime { get; set; }
-        public DateTime ArrivalDateTime { get; set; }
+        public DateTime DepartureTime { get; set; }
+        public DateTime ArrivalTime { get; set; }
         public int DepartureAirportId { get; set; }
         public Airport DepartureAirport { get; set; } = null!;
         public int ArrivalAirportId { get; set; }
@@ -13,6 +13,5 @@
         public int AircraftId { get; set; }
         public Aircraft Aircraft { get; set; } = null!;
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-    }
     }
 }
