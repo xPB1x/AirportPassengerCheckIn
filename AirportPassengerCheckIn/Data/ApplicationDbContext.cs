@@ -9,17 +9,17 @@ namespace AirportPassengerCheckIn.Data
         {
         }
 
-        DbSet<Aircraft> Aircrafts { get; set; }
-        DbSet<AircraftType> AircraftTypes { get; set; }
-        DbSet<Airport> Airports { get; set; }
-        DbSet<AirportEmployee> AirportEmployees { get; set; }
-        DbSet<Baggage> Baggages { get; set; }
-        DbSet<Booking> Bookings { get; set; }
-        DbSet<BookingPassenger> BookingPassengers { get; set; }
-        DbSet<Flight> Flights { get; set; }
-        DbSet<Passenger> Passengers { get; set; }
-        DbSet<Registration> Registrations { get; set; }
-        DbSet<Seat> Seats { get; set; }
+        public DbSet<Aircraft> Aircrafts { get; set; }
+        public DbSet<AircraftType> AircraftTypes { get; set; }
+        public DbSet<Airport> Airports { get; set; }
+        public DbSet<AirportEmployee> AirportEmployees { get; set; }
+        public DbSet<Baggage> Baggages { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<BookingPassenger> BookingPassengers { get; set; }
+        public DbSet<Flight> Flights { get; set; }
+        public DbSet<Passenger> Passengers { get; set; }
+        public DbSet<Registration> Registrations { get; set; }
+        public DbSet<Seat> Seats { get; set; }
     
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
