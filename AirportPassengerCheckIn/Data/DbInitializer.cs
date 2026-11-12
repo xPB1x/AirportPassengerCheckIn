@@ -36,7 +36,40 @@ namespace AirportPassengerCheckIn.Data
                 await context.SaveChangesAsync();
             }
 
+            if (!await context.Passengers.AnyAsync())
+            {
+                var passengers = new List<Passenger>
+                {
+                    new Passenger { FirstName = "Павел", LastName = "Брызгалов", MiddleName="Алексеевич",
+                        BirthDate = new DateOnly(2006, 8, 17), PassportNumber = "1726000000" },
+                    new Passenger { FirstName = "Михаил", LastName = "Зякин", MiddleName="Юрьевич",
+                        BirthDate = new DateOnly(2005, 8, 31), PassportNumber = "1725000000" },
+                    new Passenger { FirstName = "Илья", LastName = "Горин", MiddleName="Владимирович",
+                        BirthDate = new DateOnly(2004, 7, 28), PassportNumber = "1724000000" },
+                    new Passenger { FirstName = "Никита", LastName = "Рогов", MiddleName="Николаевич",
+                        BirthDate = new DateOnly(2004, 1, 26), PassportNumber = "1723000000" },
+                    new Passenger { FirstName = "Иван", LastName = "Смирнов", MiddleName="Иванович",
+                        BirthDate = new DateOnly(1988, 11, 5), PassportNumber = "1715000000" },
+                };
+                await context.Passengers.AddRangeAsync(passengers);
+                await context.SaveChangesAsync();
+            }
 
+
+            if (!await context.AirportEmployees.AnyAsync())
+            {
+                var airportEmployees = new List<AirportEmployee>
+                {
+                    new AirportEmployee {FirstName="Маргарита", LastName="Татаренко", MiddleName="Евгеньевна",
+                        Position="Агент по регистрации"},
+                    new AirportEmployee {FirstName="Егор", LastName="Швецов", MiddleName="Михайлович",
+                        Position="Агент по регистрации"},
+                    new AirportEmployee {FirstName="Дмитрий", LastName="Федин", MiddleName="Алексеевич",
+                        Position="Агент по регистрации"}
+                };
+                await context.AirportEmployees.AddRangeAsync(airportEmployees);
+                await context.SaveChangesAsync();
+            }
 
             // Block2 Entities with relationships on Block1 Entities
 
