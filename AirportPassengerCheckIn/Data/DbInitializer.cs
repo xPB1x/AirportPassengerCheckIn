@@ -81,10 +81,7 @@ namespace AirportPassengerCheckIn.Data
             var airbusA320100 = await context.AircraftTypes.FirstOrDefaultAsync(a => a.Model == "A320-100");
             var airbusA320200 = await context.AircraftTypes.FirstOrDefaultAsync(a => a.Model == "A320-200");
 
-            var SVO = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "SVO");
-            var VKO = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "VKO");
-            var AER = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "AER");
-            var LED = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "LED");
+            
 
             if (!await context.Aircrafts.AnyAsync())
             {
@@ -97,6 +94,7 @@ namespace AirportPassengerCheckIn.Data
                     new Aircraft { AircraftNumber = "RA-00005", AircraftType = airbusA320200 },
                 };
                 await context.Aircrafts.AddRangeAsync(aircrafts);
+                await context.SaveChangesAsync();
             }
 
             //Block3 Entities with relationships on Block2 Entities
@@ -109,46 +107,51 @@ namespace AirportPassengerCheckIn.Data
 
             if (!await context.Flights.AnyAsync())
             {
+                var SVO = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "SVO");
+                var VKO = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "VKO");
+                var AER = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "AER");
+                var LED = await context.Airports.FirstOrDefaultAsync(a => a.CodeIATA == "LED");
+
                 var flights = new List<Flight>
                 {
                     new Flight { FlightNumber = "SU0001", DepartureAirport = SVO, ArrivalAirport = AER, 
-                        DepartureTime = new DateTime(2026, 11, 25, 10, 0, 0), 
-                        ArrivalTime = new DateTime(2024,11, 25, 13, 55, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 10, 0, 0, DateTimeKind.Utc), 
+                        ArrivalTime = new DateTime(2024,11, 25, 13, 55, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00001
                     },
                     new Flight { FlightNumber = "SU0011", DepartureAirport = SVO, ArrivalAirport = LED,
-                        DepartureTime = new DateTime(2026, 11, 25, 8, 0, 0),
-                        ArrivalTime = new DateTime(2024, 11, 25, 9, 50, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 8, 0, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2024, 11, 25, 9, 50, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00002
                     },
                     new Flight { FlightNumber = "SU0021", DepartureAirport = VKO, ArrivalAirport = LED,
-                        DepartureTime = new DateTime(2026, 11, 25, 12, 30, 0),
-                        ArrivalTime = new DateTime(2024, 11, 25, 16, 20, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 12, 30, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2024, 11, 25, 16, 20, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00003
                     },
                     new Flight { FlightNumber = "SU0031", DepartureAirport = LED, ArrivalAirport = AER,
-                        DepartureTime = new DateTime(2026, 11, 25, 11, 30, 0),
-                        ArrivalTime = new DateTime(2026, 11, 25, 16, 55, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 11, 30, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2026, 11, 25, 16, 55, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00004
                     },
                     new Flight { FlightNumber = "SU0002", DepartureAirport = AER, ArrivalAirport = SVO,
-                        DepartureTime = new DateTime(2026, 11, 25, 22, 00, 0),
-                        ArrivalTime = new DateTime(2026,11, 26, 1, 40, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 22, 00, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2026,11, 26, 1, 40, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00001
                     },
                     new Flight { FlightNumber = "SU0012", DepartureAirport = LED, ArrivalAirport = SVO,
-                        DepartureTime = new DateTime(2026, 11, 25, 11, 20, 0),
-                        ArrivalTime = new DateTime(2026, 11, 25, 13, 10, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 11, 20, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2026, 11, 25, 13, 10, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00002
                     },
                     new Flight { FlightNumber = "SU0022", DepartureAirport = LED, ArrivalAirport = VKO,
-                        DepartureTime = new DateTime(2026, 11, 25, 17, 50, 0),
-                        ArrivalTime = new DateTime(2026, 11, 25, 21, 30, 0),
+                        DepartureTime = new DateTime(2026, 11, 25, 17, 50, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2026, 11, 25, 21, 30, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00003
                     },
                     new Flight { FlightNumber = "SU0032", DepartureAirport = AER, ArrivalAirport = LED,
-                        DepartureTime = new DateTime(2026, 6, 1, 13, 50, 0),
-                        ArrivalTime = new DateTime(2026, 6, 1, 12, 0, 0),
+                        DepartureTime = new DateTime(2026, 6, 1, 13, 50, 0, DateTimeKind.Utc),
+                        ArrivalTime = new DateTime(2026, 6, 1, 12, 0, 0, DateTimeKind.Utc),
                         Aircraft = aircraftRA00004
                     },
                 };
@@ -202,14 +205,14 @@ namespace AirportPassengerCheckIn.Data
 
                 var bookings = new List<Booking>
                 {
-                    new Booking { Flight = flightSU0001, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0011, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0021, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0031, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0002, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0012, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0022, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
-                    new Booking { Flight = flightSU0032, CreatedAt = DateTime.Now, Status = BookingStatus.Pending }
+                    new Booking { BookingNumber = "NT120X", Flight = flightSU0001, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "P43VA3", Flight = flightSU0011, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "QCK3A3", Flight = flightSU0021, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "PXFW3S", Flight = flightSU0031, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "BI341F", Flight = flightSU0002, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "XPDSU5", Flight = flightSU0012, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "31OS5O", Flight = flightSU0022, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = "PVSL4D", Flight = flightSU0032, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending }
                 };
                 await context.Bookings.AddRangeAsync(bookings);
                 await context.SaveChangesAsync();

@@ -187,6 +187,9 @@ namespace AirportPassengerCheckIn.Migrations
                     b.Property<int>("FlightId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookingNumber")
@@ -347,6 +350,9 @@ namespace AirportPassengerCheckIn.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("AircraftId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Class")
                         .HasColumnType("integer");
 
                     b.Property<string>("SeatNumber")
