@@ -1,13 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.Models;
 using AirportPassengerCheckIn.Models.Enums;
+using AirportPassengerCheckIn.Services;
 
 
 namespace AirportPassengerCheckIn.Data
 {
     public static class DbInitializer
     {
-        public static async Task InitializeAsync(ApplicationDbContext context)
+        public static async Task InitializeAsync(ApplicationDbContext context, BookingNumberGenerator bookingNumberGenerator)
         {
             //Block1 Entities without relationships
             if (!await context.Airports.AnyAsync())
@@ -203,16 +204,25 @@ namespace AirportPassengerCheckIn.Data
                 var flightSU0022 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0022");
                 var flightSU0032 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0032");
 
+                var bookingNumber1 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber2 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber3 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber4 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber5 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber6 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber7 = await bookingNumberGenerator.GenerateAsync();
+                var bookingNumber8 = await bookingNumberGenerator.GenerateAsync();
+
                 var bookings = new List<Booking>
                 {
-                    new Booking { BookingNumber = "NT120X", Flight = flightSU0001, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "P43VA3", Flight = flightSU0011, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "QCK3A3", Flight = flightSU0021, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "PXFW3S", Flight = flightSU0031, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "BI341F", Flight = flightSU0002, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "XPDSU5", Flight = flightSU0012, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "31OS5O", Flight = flightSU0022, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
-                    new Booking { BookingNumber = "PVSL4D", Flight = flightSU0032, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending }
+                    new Booking { BookingNumber = bookingNumber1, Flight = flightSU0001, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber2, Flight = flightSU0011, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber3, Flight = flightSU0021, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber4, Flight = flightSU0031, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber5, Flight = flightSU0002, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber6, Flight = flightSU0012, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber7, Flight = flightSU0022, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending },
+                    new Booking { BookingNumber = bookingNumber8, Flight = flightSU0032, CreatedAt = DateTime.UtcNow, Status = BookingStatus.Pending }
                 };
                 await context.Bookings.AddRangeAsync(bookings);
                 await context.SaveChangesAsync();

@@ -1,5 +1,6 @@
 using AirportPassengerCheckIn.Data;
 using Microsoft.EntityFrameworkCore;
+using AirportPassengerCheckIn.Services;
 
 namespace AirportPassengerCheckIn
 {
@@ -17,6 +18,8 @@ namespace AirportPassengerCheckIn
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddScoped<BookingNumberGenerator>();
 
             var app = builder.Build();
 
