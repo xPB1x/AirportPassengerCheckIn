@@ -188,17 +188,18 @@ namespace AirportPassengerCheckIn.Data
 
 
             //Block4 Entities with relationships on Block3 Entities
-            var flightSU0001 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0001");
-            var flightSU0011 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0011");
-            var flightSU0021 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0021");
-            var flightSU0031 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0031");
-            var flightSU0002 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0002");
-            var flightSU0012 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0012");
-            var flightSU0022 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0022");
-            var flightSU0032 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0032");
 
             if (!await context.Bookings.AnyAsync())
             {
+                var flightSU0001 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0001");
+                var flightSU0011 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0011");
+                var flightSU0021 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0021");
+                var flightSU0031 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0031");
+                var flightSU0002 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0002");
+                var flightSU0012 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0012");
+                var flightSU0022 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0022");
+                var flightSU0032 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0032");
+
                 var bookings = new List<Booking>
                 {
                     new Booking { Flight = flightSU0001, CreatedAt = DateTime.Now, Status = BookingStatus.Pending },
@@ -214,7 +215,26 @@ namespace AirportPassengerCheckIn.Data
                 await context.SaveChangesAsync();
             }
 
-            
+            if (!await context.BookingPassengers.AnyAsync())
+            {
+                var booking1 = await context.Bookings.FirstOrDefaultAsync(b => b.Flight.FlightNumber == "SU0001");
+                var booking2 = await context.Bookings.FirstOrDefaultAsync(b => b.Flight.FlightNumber == "SU0011");
+                var booking3 = await context.Bookings.FirstOrDefaultAsync(b => b.Flight.FlightNumber == "SU0021");
+                var booking4 = await context.Bookings.FirstOrDefaultAsync(b => b.Flight.FlightNumber == "SU0031");
+                var passenger1 = await context.Passengers.FirstOrDefaultAsync(p => p.PassportNumber == "1726000000");
+                var passenger2 = await context.Passengers.FirstOrDefaultAsync(p => p.PassportNumber == "1725000000");
+                var passenger3 = await context.Passengers.FirstOrDefaultAsync(p => p.PassportNumber == "1724000000");
+                var passenger4 = await context.Passengers.FirstOrDefaultAsync(p => p.PassportNumber == "1723000000");
+                var bookingPassengers = new List<BookingPassenger>
+                {
+                    new BookingPassenger { Booking = booking1, Passenger = passenger1 },
+                    new BookingPassenger { Booking = booking2, Passenger = passenger2 },
+                    new BookingPassenger { Booking = booking3, Passenger = passenger3 },
+                    new BookingPassenger { Booking = booking4, Passenger = passenger4 }
+                };
+                await context.BookingPassengers.AddRangeAsync(bookingPassengers);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
