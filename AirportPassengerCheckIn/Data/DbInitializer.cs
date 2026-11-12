@@ -161,30 +161,31 @@ namespace AirportPassengerCheckIn.Data
             {
                 var seats = new List<Seat>
                 {
-                    new Seat { SeatNumber = "1A", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "1B", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "1C", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "1D", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "2A", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "2B", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "2C", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "2D", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "3A", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "3B", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "3C", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "3D", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "3E", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "3F", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "4A", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "4B", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "4C", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "4D", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "4E", Aircraft = aircraftRA00001 },
-                    new Seat { SeatNumber = "4F", Aircraft = aircraftRA00001 },
+                    new Seat { SeatNumber = "1A", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "1B", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "1C", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "1D", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "2A", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "2B", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "2C", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "2D", Aircraft = aircraftRA00001, Class=SeatClass.Business },
+                    new Seat { SeatNumber = "3A", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "3B", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "3C", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "3D", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "3E", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "3F", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "4A", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "4B", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "4C", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "4D", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "4E", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
+                    new Seat { SeatNumber = "4F", Aircraft = aircraftRA00001, Class=SeatClass.Economy },
                 };
                 await context.Seats.AddRangeAsync(seats);
                 await context.SaveChangesAsync();
             }
+
 
             //Block4 Entities with relationships on Block3 Entities
             var flightSU0001 = await context.Flights.FirstOrDefaultAsync(f => f.FlightNumber == "SU0001");
@@ -213,7 +214,7 @@ namespace AirportPassengerCheckIn.Data
                 await context.SaveChangesAsync();
             }
 
-
+            
         }
     }
 }
