@@ -14,7 +14,7 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet("{bookingNumber}")]
-        public async Task<ActionResult<BookingDto>> GetBooking(string bookingNumber)
+        public async Task<ActionResult<BookingDTO>> GetBooking(string bookingNumber)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
@@ -30,12 +30,12 @@ namespace AirportPassengerCheckIn.Controllers
                     .ThenInclude(bp => bp.Registration)
                         .ThenInclude(r => r.Seat)
                 .Where(b => b.BookingNumber == bookingNumber)
-                .Select(b => new BookingDto
+                .Select(b => new BookingDTO
                 {
                     BookingNumber = b.BookingNumber,
                     Status = b.Status.ToString(),
                     CreatedAt = b.CreatedAt,
-                    Flight = new FlightDto
+                    Flight = new FlightDTO
                     {
                         Id = b.Flight.Id,
                         FlightNumber = b.Flight.FlightNumber,
@@ -47,7 +47,7 @@ namespace AirportPassengerCheckIn.Controllers
                         AircraftCompany = b.Flight.Aircraft.AircraftType.Company,
                         AircraftModel = b.Flight.Aircraft.AircraftType.Model
                     },
-                    Passengers = b.BookingPassengers.Select(bp => new BookingPassengerDto
+                    Passengers = b.BookingPassengers.Select(bp => new BookingPassengerDTO
                     {
                         FirstName = bp.Passenger.FirstName,
                         LastName = bp.Passenger.LastName,
@@ -63,6 +63,46 @@ namespace AirportPassengerCheckIn.Controllers
                 return NotFound();
             }
             return Ok(booking);
+        }
+
+        [HttpGet("passenger/{passportNumber}")]
+        public async Task<ActionResult<ICollection<BookingDTO>>> GetByPassengerPassport(string passportNumber)
+        {
+            var bookings = await _context.Bookings
+                .Where(b => b.BookingPassengers.Any(bp => bp.Passenger.PassportNumber == passportNumber))
+                .OrderByDescending(b => b.CreatedAt)
+                .Select(b => new BookingDTO
+                {
+                    BookingNumber = b.BookingNumber,
+                    Status = b.Status.ToString(),
+                    CreatedAt = b.CreatedAt,
+
+                    Flight = new FlightDTO
+                    {
+                        Id = b.Flight.Id,
+                        FlightNumber = b.Flight.FlightNumber,
+                        DepartureTime = b.Flight.DepartureTime,
+                        ArrivalTime = b.Flight.ArrivalTime,
+                        DepartureAirport = b.Flight.DepartureAirport.CodeIATA,
+                        ArrivalAirport = b.Flight.ArrivalAirport.CodeIATA,
+                        AircraftNumber = b.Flight.Aircraft.AircraftNumber,
+                        AircraftCompany = b.Flight.Aircraft.AircraftType.Company,
+                        AircraftModel = b.Flight.Aircraft.AircraftType.Model
+                    },
+                    Passengers = b.BookingPassengers.Select(bp => new BookingPassengerDTO
+                    {
+                        FirstName = bp.Passenger.FirstName,
+                        LastName = bp.Passenger.LastName,
+                        MiddleName = bp.Passenger.MiddleName,
+                        PassportNumber = bp.Passenger.PassportNumber,
+                        RegistrationStatus = bp.Registration != null ? bp.Registration.Status.ToString() : null,
+                        SeatNumber = bp.Registration == null ? null :
+                                        bp.Registration.Seat == null ? null : bp.Registration.Seat.SeatNumber
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(bookings);
         }
     }
 }

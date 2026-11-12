@@ -1,6 +1,6 @@
 ﻿namespace AirportPassengerCheckIn.DTOs
 {
-    public class BookingPassengerDto
+    public class BookingPassengerDTO
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }

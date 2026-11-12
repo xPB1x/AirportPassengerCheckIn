@@ -16,14 +16,14 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<FlightDto>>> GetFlights()
+        public async Task<ActionResult<List<FlightDTO>>> GetFlights()
         {
             var flights = await _context.Flights
                 .Include(f => f.DepartureAirport)
                 .Include(f => f.ArrivalAirport)
                 .Include(f => f.Aircraft)
                     .ThenInclude(a => a.AircraftType)
-                .Select(f => new FlightDto
+                .Select(f => new FlightDTO
                 {
                     Id = f.Id,
                     FlightNumber = f.FlightNumber,
@@ -43,7 +43,7 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<FlightDto>> GetFlight(int id)
+        public async Task<ActionResult<FlightDTO>> GetFlight(int id)
         {
             var flight = await _context.Flights
                 .Include(f => f.DepartureAirport)
@@ -51,7 +51,7 @@ namespace AirportPassengerCheckIn.Controllers
                 .Include(f => f.Aircraft)
                     .ThenInclude(a => a.AircraftType)
                 .Where(f => f.Id == id)
-                .Select(f => new FlightDto
+                .Select(f => new FlightDTO
                 {
                     Id = f.Id,
                     FlightNumber = f.FlightNumber,

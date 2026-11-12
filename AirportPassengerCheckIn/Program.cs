@@ -41,8 +41,9 @@ namespace AirportPassengerCheckIn
             {
                 var services = scope.ServiceProvider;
                 var context = services.GetRequiredService<ApplicationDbContext>();
+                var bookingNumberGenerator = services.GetRequiredService<BookingNumberGenerator>();
 
-                await DbInitializer.InitializeAsync(context);
+                await DbInitializer.InitializeAsync(context, bookingNumberGenerator);
             }
 
             app.UseHttpsRedirection();
