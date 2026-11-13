@@ -2,15 +2,18 @@
 using AirportPassengerCheckIn.Data;
 using AirportPassengerCheckIn.DTOs;
 using Microsoft.EntityFrameworkCore;
+using AirportPassengerCheckIn.Services;
 
 namespace AirportPassengerCheckIn.Controllers
 {
     public class BookingsController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public BookingsController(ApplicationDbContext context)
+        private readonly BookingService _bookingService;
+        public BookingsController(ApplicationDbContext context, BookingService bookingService)
         {
             _context = context;
+            _bookingService = bookingService;
         }
 
         [HttpGet("{bookingNumber}")]
@@ -103,6 +106,18 @@ namespace AirportPassengerCheckIn.Controllers
                 .ToListAsync();
 
             return Ok(bookings);
+        }
+
+        [HttpGet("{bookingNumber}/cancel")]
+        public async Task<IActionResult> CancelBooking(string bookingNumber)
+        {
+            var cancelled = await _bookingService.CancelBookingAsync(bookingNumber);
+            if (!cancelled)
+            {
+                return NotFound("Booking not found or already cancelled");
+            }
+
+            return Ok("Booking successfully cancelled");
         }
     }
 }

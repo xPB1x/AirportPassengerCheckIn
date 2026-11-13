@@ -20,6 +20,7 @@ namespace AirportPassengerCheckIn
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddScoped<BookingNumberGenerator>();
+            builder.Services.AddScoped<BookingService>();
 
             var app = builder.Build();
 
