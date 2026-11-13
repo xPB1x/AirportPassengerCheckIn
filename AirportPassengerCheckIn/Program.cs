@@ -1,6 +1,9 @@
 using AirportPassengerCheckIn.Data;
-using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.Services;
+using AirportPassengerCheckIn.Models.Identity;
+
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace AirportPassengerCheckIn
 {
@@ -15,6 +18,11 @@ namespace AirportPassengerCheckIn
             builder.Services.AddDbContext<ApplicationDbContext>(options => 
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
+
+            builder.Services
+                .AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -50,6 +58,7 @@ namespace AirportPassengerCheckIn
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            app.UseAuthorization();
             app.UseAuthorization();
 
             app.MapStaticAssets();
