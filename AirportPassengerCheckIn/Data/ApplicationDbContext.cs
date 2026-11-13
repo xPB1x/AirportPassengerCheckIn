@@ -216,6 +216,20 @@ namespace AirportPassengerCheckIn.Data
                     .HasForeignKey(s => s.AircraftId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            // ApplicationUser
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.HasOne(au => au.Passenger)
+                    .WithOne()
+                    .HasForeignKey<ApplicationUser>(au => au.PassengerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(au => au.AirportEmployee)
+                    .WithOne()
+                    .HasForeignKey<ApplicationUser>(au => au.AirportEmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }
