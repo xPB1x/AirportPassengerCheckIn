@@ -108,10 +108,11 @@ namespace AirportPassengerCheckIn.Controllers
             return Ok(bookings);
         }
 
-        [HttpGet("{bookingNumber}/cancel")]
+        [HttpPatch("{bookingNumber}/cancel")]
         public async Task<IActionResult> CancelBooking(string bookingNumber)
         {
             var cancelled = await _bookingService.CancelBookingAsync(bookingNumber);
+
             if (!cancelled)
             {
                 return NotFound("Booking not found or already cancelled");
