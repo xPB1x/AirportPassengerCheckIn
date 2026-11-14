@@ -121,6 +121,11 @@ namespace AirportPassengerCheckIn.Data
                     .WithMany(f => f.Bookings)
                     .HasForeignKey(b => b.FlightId)
                     .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(b => b.User)
+                    .WithMany(u => u.Bookings)
+                    .HasForeignKey(b => b.UserId)
+                    .IsRequired()
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             //BookingPassenger
@@ -220,11 +225,6 @@ namespace AirportPassengerCheckIn.Data
             // ApplicationUser
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
-                entity.HasOne(au => au.Passenger)
-                    .WithOne()
-                    .HasForeignKey<ApplicationUser>(au => au.PassengerId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
                 entity.HasOne(au => au.AirportEmployee)
                     .WithOne()
                     .HasForeignKey<ApplicationUser>(au => au.AirportEmployeeId)
