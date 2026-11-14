@@ -37,14 +37,12 @@ namespace AirportPassengerCheckIn.Controllers
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(
-            RegisterPassengerViewModel model)
+            RegisterViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);   
             }
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
 
             var user = new ApplicationUser
             {
@@ -62,36 +60,22 @@ namespace AirportPassengerCheckIn.Controllers
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
 
-                transaction.RollbackAsync();
                 return View(model);
             }
-
-            var passenger = new Passenger
-            {
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                MiddleName = model.MiddleName,
-                BirthDate = model.BirthDate,
-                PassportNumber = model.PassportNumber
-            };
-
-            _context.Passengers.Add(passenger);
-            await _context.SaveChangesAsync();
 
             var roleResult = await _userManager.AddToRoleAsync(user, "Passenger");
 
             if (!roleResult.Succeeded)
             {
+                await _userManager.DeleteAsync(user);
                 foreach (var error in roleResult.Errors)
                 {
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
 
-                await transaction.RollbackAsync();
                 return View(model);
             }
 
-            await transaction.CommitAsync();
 
             await _signInManager.SignInAsync(user, isPersistent: false);
 

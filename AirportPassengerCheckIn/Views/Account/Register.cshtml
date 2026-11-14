@@ -1,5 +1,5 @@
 ﻿
-@model AirportPassengerCheckIn.DTOs.ViewModels.RegisterPassengerViewModel
+@model AirportPassengerCheckIn.DTOs.ViewModels.RegisterViewModel
 
 
 <div class="container mt-5">
@@ -35,49 +35,6 @@
                     <input asp-for="ConfirmPassword"
                            class="form-control" />
                     <span asp-validation-for="ConfirmPassword"
-                          class="text-danger"></span>
-                </div>
-
-                <hr class="my-4" />
-
-                <h5 class="mb-3">Персональные данные</h5>
-
-                <div class="mb-3">
-                    <label asp-for="LastName" class="form-label"></label>
-                    <input asp-for="LastName" class="form-control" />
-                    <span asp-validation-for="LastName"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="FirstName" class="form-label"></label>
-                    <input asp-for="FirstName" class="form-control" />
-                    <span asp-validation-for="FirstName"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="MiddleName" class="form-label"></label>
-                    <input asp-for="MiddleName" class="form-control" />
-                    <span asp-validation-for="MiddleName"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="BirthDate" class="form-label"></label>
-                    <input asp-for="BirthDate"
-                           type="date"
-                           class="form-control" />
-                    <span asp-validation-for="BirthDate"
-                          class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="PassportNumber"
-                           class="form-label"></label>
-                    <input asp-for="PassportNumber"
-                           class="form-control" />
-                    <span asp-validation-for="PassportNumber"
                           class="text-danger"></span>
                 </div>
 
