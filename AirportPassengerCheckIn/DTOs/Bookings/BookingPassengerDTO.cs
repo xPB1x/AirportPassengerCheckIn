@@ -1,4 +1,4 @@
-﻿namespace AirportPassengerCheckIn.DTOs
+﻿namespace AirportPassengerCheckIn.DTOs.Bookings
 {
     public class BookingPassengerDTO
     {

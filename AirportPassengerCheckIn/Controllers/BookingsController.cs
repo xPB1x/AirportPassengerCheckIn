@@ -3,6 +3,7 @@ using AirportPassengerCheckIn.Data;
 using AirportPassengerCheckIn.DTOs;
 using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.Services;
+using AirportPassengerCheckIn.DTOs.Bookings;
 
 namespace AirportPassengerCheckIn.Controllers
 {
