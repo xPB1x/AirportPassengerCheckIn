@@ -132,15 +132,23 @@ namespace AirportPassengerCheckIn.Controllers
             CreateBookingRequest request)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            
+
             if (userId == null)
             {
                 return Unauthorized();
             }
 
-            var result = await _bookingService.CreateBookingAsync(request, userId);
-
-            return Ok(result);
+            try
+            {
+                var result = await _bookingService.CreateBookingAsync(request, userId);
+                return CreatedAtAction(nameof(GetBooking),
+                    new { bookingNumber = result.BookingNumber },
+                    result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }
