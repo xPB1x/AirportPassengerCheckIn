@@ -45,7 +45,7 @@ public class RegisterPassengerViewModel
     [Required(ErrorMessage = "Укажите дату рождения")]
     [DataType(DataType.Date)]
     [Display(Name = "Дата рождения")]
-    public DateTime BirthDate { get; set; }
+    public DateOnly BirthDate { get; set; }
 
     [Required(ErrorMessage = "Укажите номер паспорта")]
     [StringLength(30)]
