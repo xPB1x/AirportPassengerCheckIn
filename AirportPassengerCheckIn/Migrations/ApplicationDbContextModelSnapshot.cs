@@ -190,12 +190,18 @@ namespace AirportPassengerCheckIn.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookingNumber")
                         .IsUnique();
 
                     b.HasIndex("FlightId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Bookings");
                 });
@@ -299,9 +305,6 @@ namespace AirportPassengerCheckIn.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<int?>("PassengerId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -332,9 +335,6 @@ namespace AirportPassengerCheckIn.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
-
-                    b.HasIndex("PassengerId")
-                        .IsUnique();
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -606,7 +606,15 @@ namespace AirportPassengerCheckIn.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("AirportPassengerCheckIn.Models.Identity.ApplicationUser", "User")
+                        .WithMany("Bookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Flight");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AirportPassengerCheckIn.Models.BookingPassenger", b =>
@@ -662,14 +670,7 @@ namespace AirportPassengerCheckIn.Migrations
                         .HasForeignKey("AirportPassengerCheckIn.Models.Identity.ApplicationUser", "AirportEmployeeId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("AirportPassengerCheckIn.Models.Passenger", "Passenger")
-                        .WithOne()
-                        .HasForeignKey("AirportPassengerCheckIn.Models.Identity.ApplicationUser", "PassengerId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.Navigation("AirportEmployee");
-
-                    b.Navigation("Passenger");
                 });
 
             modelBuilder.Entity("AirportPassengerCheckIn.Models.Registration", b =>
@@ -787,6 +788,11 @@ namespace AirportPassengerCheckIn.Migrations
                 });
 
             modelBuilder.Entity("AirportPassengerCheckIn.Models.Flight", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("AirportPassengerCheckIn.Models.Identity.ApplicationUser", b =>
                 {
                     b.Navigation("Bookings");
                 });
