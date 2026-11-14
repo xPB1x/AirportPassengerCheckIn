@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using AirportPassengerCheckIn.Data;
 using AirportPassengerCheckIn.DTOs;
 using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.Services;
 using AirportPassengerCheckIn.DTOs.Bookings;
+using System.Security.Claims;
 
 namespace AirportPassengerCheckIn.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
     public class BookingsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -120,6 +125,22 @@ namespace AirportPassengerCheckIn.Controllers
             }
 
             return Ok("Booking successfully cancelled");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateBooking(
+            CreateBookingRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            var result = await _bookingService.CreateBookingAsync(request, userId);
+
+            return Ok(result);
         }
     }
 }
