@@ -49,12 +49,16 @@ namespace AirportPassengerCheckIn
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
+
                 var context = services.GetRequiredService<ApplicationDbContext>();
                 var bookingNumberGenerator = services.GetRequiredService<BookingNumberGenerator>();
+
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var configuration = services.GetRequiredService<IConfiguration>();
 
                 await DbInitializer.InitializeAsync(context, bookingNumberGenerator);
-                await IdentityInitializer.InitializeAsync(roleManager);
+                await IdentityInitializer.InitializeAsync(roleManager, userManager, configuration);
             }
 
             app.UseHttpsRedirection();
