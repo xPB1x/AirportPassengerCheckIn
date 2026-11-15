@@ -317,6 +317,36 @@ namespace AirportPassengerCheckIn.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var flight = await _context.Flights
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (flight == null)
+            {
+                return NotFound();
+            }
+
+            bool hasBookings = await _context.Bookings
+                .AnyAsync(b => b.FlightId == id);
+
+            if (hasBookings)
+            {
+                TempData["ErrorMessage"] =
+                    "This flight cannot be deleted because it has bookings.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Flights.Remove(flight);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Flight has been deleted successfully";
+
+            return RedirectToAction(nameof(Index));
+        }
+
         private async Task AddAiportsAndAircraftsToModel(CreateFlightViewModel model)
         {
             model.Airports = await _context.Airports
