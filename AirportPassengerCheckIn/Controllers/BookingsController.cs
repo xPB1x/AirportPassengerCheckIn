@@ -127,9 +127,18 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpPatch("{bookingNumber}/cancel")]
+        [Authorize]
         public async Task<IActionResult> CancelBooking(string bookingNumber)
         {
-            var cancelled = await _bookingService.CancelBookingAsync(bookingNumber);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return Unauthorized();
+            }
+
+            bool canManageAll = User.IsInRole("Admin") || User.IsInRole("AirportEmployee");
+
+            var cancelled = await _bookingService.CancelBookingAsync(bookingNumber, userId, canManageAll);
 
             if (!cancelled)
             {
@@ -140,6 +149,7 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> CreateBooking(
             CreateBookingRequest request)
         {

@@ -127,12 +127,16 @@ namespace AirportPassengerCheckIn.Services
             };
         }
 
-        public async Task<bool> CancelBookingAsync(string bookingNumber)
+        public async Task<bool> CancelBookingAsync(
+            string bookingNumber,
+            string userId,
+            bool canManageAll)
         {
             var booking = await _context.Bookings
                 .Include(b => b.BookingPassengers)
                     .ThenInclude(bp => bp.Registration)
-                .FirstOrDefaultAsync(b => b.BookingNumber == bookingNumber);
+                .FirstOrDefaultAsync(b => b.BookingNumber == bookingNumber &&
+                    (canManageAll || b.UserId == userId));
 
             if (booking == null || booking.Status == BookingStatus.Cancelled)
             {
