@@ -1,4 +1,81 @@
-﻿@page
-@model AirportPassengerCheckIn.Views.Flights.EditModel
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Flights.EditFlightViewModel
+
 @{
+    ViewData["Title"] = "Edit flight";
+}
+
+<div class="container mt-4">
+    <h2>Edit flight</h2>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="FlightNumber" class="form-label"></label>
+            <input asp-for="FlightNumber" class="form-control" />
+            <span asp-validation-for="FlightNumber" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DepartureAirportId" class="form-label"></label>
+            <select asp-for="DepartureAirportId"
+                    asp-items="Model.Airports"
+                    class="form-select">
+                <option value="">Select departure airport</option>
+            </select>
+            <span asp-validation-for="DepartureAirportId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ArrivalAirportId" class="form-label"></label>
+            <select asp-for="ArrivalAirportId"
+                    asp-items="Model.Airports"
+                    class="form-select">
+                <option value="">Select arrival airport</option>
+            </select>
+            <span asp-validation-for="ArrivalAirportId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DepartureTime" class="form-label"></label>
+            <input asp-for="DepartureTime"
+                   type="datetime-local"
+                   asp-format="{0:yyyy-MM-ddTHH:mm}"
+                   class="form-control" />
+            <span asp-validation-for="DepartureTime" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ArrivalTime" class="form-label"></label>
+            <input asp-for="ArrivalTime"
+                   type="datetime-local"
+                   asp-format="{0:yyyy-MM-ddTHH:mm}"
+                   class="form-control" />
+            <span asp-validation-for="ArrivalTime" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="AircraftId" class="form-label"></label>
+            <select asp-for="AircraftId"
+                    asp-items="Model.Aircrafts"
+                    class="form-select">
+                <option value="">Select aircraft</option>
+            </select>
+            <span asp-validation-for="AircraftId" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save changes
+        </button>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }
