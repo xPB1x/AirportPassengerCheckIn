@@ -28,6 +28,12 @@
                 @TempData["SuccessMessage"]
             </div>
         }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
         <table class="table table-bordered table-striped align-middle">
             <thead>
                 <tr>
@@ -52,6 +58,17 @@
                                class="btn btn-sm btn-primary">
                                 Изменить
                             </a>
+                            <form asp-action="Delete"
+                                  asp-route-id="@aircraftType.Id"
+                                  method="post"
+                                  class="d-inline">
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Удалить тип самолета?')">
+                                    Удалить
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 }

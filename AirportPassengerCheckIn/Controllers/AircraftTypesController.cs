@@ -7,6 +7,7 @@ using AirportPassengerCheckIn.Models.Identity;
 using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.DTOs.ViewModels.Aircrafts;
 using AirportPassengerCheckIn.Models;
+using System.Diagnostics;
 
 namespace AirportPassengerCheckIn.Controllers
 {
@@ -146,6 +147,32 @@ namespace AirportPassengerCheckIn.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "AircraftType has changed completly";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var aircaftType = await _context.AircraftTypes
+                .Include(at => at.Aircrafts)
+                .FirstOrDefaultAsync(at => at.Id == id);
+            if (aircaftType == null)
+            {
+                return NotFound();
+            }
+
+            Debug.WriteLine(aircaftType.Aircrafts.Count);
+            if (aircaftType.Aircrafts.Count != 0)
+            {
+                TempData["ErrorMessage"] = "You can't delete this type, because of aircrafts that refer to this type";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.AircraftTypes.Remove(aircaftType);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "AircraftType has deleted completly";
+
             return RedirectToAction(nameof(Index));
         }
     }
