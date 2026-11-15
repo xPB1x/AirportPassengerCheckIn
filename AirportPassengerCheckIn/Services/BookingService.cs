@@ -90,6 +90,22 @@ namespace AirportPassengerCheckIn.Services
 
                     _context.Passengers.Add(passenger);
                 }
+                else
+                {
+                    bool passengerDataMatches =
+                        string.Equals(passenger.FirstName, passengerRequest.FirstName.Trim(),
+                            StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(passenger.LastName, passengerRequest.LastName.Trim(),
+                            StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(passenger.MiddleName ?? "", passengerRequest.MiddleName?.Trim() ?? "",
+                            StringComparison.OrdinalIgnoreCase) &&
+                        passenger.BirthDate == passengerRequest.BirthDate!.Value;
+
+                    if (!passengerDataMatches)
+                    {
+                        throw new InvalidOperationException("Passenger's data doesn't match the data in the System");
+                    }
+                }
 
                 booking.BookingPassengers.Add(new BookingPassenger
                 {
