@@ -7,6 +7,7 @@ using AirportPassengerCheckIn.Data;
 using AirportPassengerCheckIn.Models.Identity;
 using AirportPassengerCheckIn.DTOs.ViewModels;
 using AirportPassengerCheckIn.Models;
+using System.Diagnostics;
 
 namespace AirportPassengerCheckIn.Controllers
 {
@@ -37,7 +38,7 @@ namespace AirportPassengerCheckIn.Controllers
                 var roles = await _userManager.GetRolesAsync(user);
                 model.Users.Add(new UserListItemViewModel
                 {
-                    userId = user.Id,
+                    UserId = user.Id,
                     Email = user.Email ?? string.Empty,
                     Roles = roles.ToList(),
                     IsLocked = user.LockoutEnabled &&
@@ -146,8 +147,125 @@ namespace AirportPassengerCheckIn.Controllers
                 }
 
                 await transaction.CommitAsync();
-                TempData["SuccessMessage"] = "The User was completly created";
+                TempData["SuccessMessage"] = "The User has completly created";
                 return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(string id)
+        {
+            var user = await _context.Users
+                .Include(u => u.AirportEmployee)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                Debug.WriteLine("GG");
+                return NotFound();
+            }
+
+            var model = new EditUserViewModel
+            {
+                UserId = id,
+                Email = user.Email ?? string.Empty,
+
+                IsEmployee = user.AirportEmployee != null,
+
+                FirstName = user.AirportEmployee?.FirstName,
+                LastName = user.AirportEmployee?.LastName,
+                MiddleName = user.AirportEmployee?.MiddleName,
+                Position = user.AirportEmployee?.Position
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(EditUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _context.Users
+                .Include(u => u.AirportEmployee)
+                .FirstOrDefaultAsync(u => u.Id == model.UserId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(model.Email.Trim());
+            if (existingUser == null || existingUser.Id != user.Id)
+            {
+                ModelState.AddModelError(
+                    nameof(model.Email),
+                    "User with this email has already created");
+                return View(model);
+            }
+
+            if (user.AirportEmployee != null)
+            {
+                if (string.IsNullOrWhiteSpace(model.FirstName))
+                    ModelState.AddModelError(nameof(model.FirstName), "Укажите имя");
+
+                if (string.IsNullOrWhiteSpace(model.LastName))
+                    ModelState.AddModelError(nameof(model.LastName), "Укажите фамилию");
+
+                if (string.IsNullOrWhiteSpace(model.Position))
+                    ModelState.AddModelError(nameof(model.Position), "Укажите должность");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var email = model.Email.Trim();
+                user.Email = email;
+                user.UserName = email;
+
+                var updateResult = await _userManager.UpdateAsync(user);
+
+                if(!updateResult.Succeeded)
+                {
+                    foreach (var error in updateResult.Errors)
+                    {
+                        ModelState.AddModelError(
+                            string.Empty, error.Description);
+                    }
+                    await transaction.RollbackAsync();
+                    return View(model);
+                }
+
+                if (user.AirportEmployee != null)
+                {
+                    user.AirportEmployee.FirstName = model.FirstName!.Trim();
+                    user.AirportEmployee.LastName = model.LastName!.Trim();
+                    user.AirportEmployee.MiddleName = model.MiddleName?.Trim();
+                    user.AirportEmployee.Position = model.Position!.Trim();
+
+                    await _context.SaveChangesAsync();
+                }
+
+                await transaction.CommitAsync();
+
+                TempData["SuccessMessage"] = "The User's data has updated completly";
+                return RedirectToAction(nameof(Index));
+
             }
             catch
             {

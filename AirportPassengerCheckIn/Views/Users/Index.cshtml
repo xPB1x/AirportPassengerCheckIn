@@ -24,6 +24,7 @@
                     <th>ФИО сотрудника</th>
                     <th>Должность</th>
                     <th>Статус</th>
+                    <th>Действия</th>
                 </tr>
             </thead>
 
@@ -73,6 +74,14 @@
                                         Активен
                                     </span>
                                 }
+                            </td>
+                            <td>
+                                <a asp-controller="Users"
+                                   asp-action="Edit"
+                                   asp-route-id="@user.UserId"
+                                   class="btn btn-sm btn-outline-primary">
+                                    Изменить
+                                </a>
                             </td>
                         </tr>
                     }
