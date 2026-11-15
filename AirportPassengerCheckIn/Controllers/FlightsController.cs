@@ -25,13 +25,26 @@ namespace AirportPassengerCheckIn.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+
             var flights = await _context.Flights
+                .Include(f => f.DepartureAirport)
+                .Include(f => f.ArrivalAirport)
+                .Include(f => f.Aircraft)
+                    .ThenInclude(a => a.AircraftType)
+                .OrderBy(f => f.DepartureTime)
+                .ToListAsync();
+            var model = flights
                 .Select(f => new FlightViewModel
                 {
                     Id = f.Id,
                     FlightNumber = f.FlightNumber,
-                    DepartureTime = f.DepartureTime,
-                    ArrivalTime = f.ArrivalTime,
+                    DepartureTime = TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.SpecifyKind(f.DepartureTime, DateTimeKind.Utc),
+                        TimeZoneInfo.FindSystemTimeZoneById(f.DepartureAirport.TimeZoneId)),
+
+                    ArrivalTime = TimeZoneInfo.ConvertTimeFromUtc(
+                        DateTime.SpecifyKind(f.ArrivalTime, DateTimeKind.Utc),
+                        TimeZoneInfo.FindSystemTimeZoneById(f.ArrivalAirport.TimeZoneId)),
 
                     DepartureAirportCode = f.DepartureAirport.CodeIATA,
                     DepartureAirportCity = f.DepartureAirport.City,
@@ -44,9 +57,9 @@ namespace AirportPassengerCheckIn.Controllers
                     AircraftModel = f.Aircraft.AircraftType.Model
                 })
                 .OrderBy(f => f.DepartureTime)
-                .ToListAsync();
+                .ToList(); 
 
-            return View(flights);
+            return View(model);
         }
 
         [HttpGet]
@@ -68,14 +81,6 @@ namespace AirportPassengerCheckIn.Controllers
                     "Arrival airport and Departure airport should be different");
             }
 
-            if (model.DepartureTime != default &&
-                model.ArrivalTime != default &&
-                model.DepartureTime >= model.ArrivalTime)
-            {
-                ModelState.AddModelError(
-                    nameof(model.ArrivalTime),
-                    "ArrivalTime should be greater than DepartureTime");
-            }
             if (model.DepartureAirportId > 0 &&
                !await _context.Airports.AnyAsync(a => a.Id == model.DepartureAirportId))
             {
@@ -119,11 +124,39 @@ namespace AirportPassengerCheckIn.Controllers
                 return View(model);
             }
 
+            var departureAirport = await _context.Airports
+                .FirstAsync(a => a.Id == model.DepartureAirportId);
+
+            var arrivalAirport = await _context.Airports
+                .FirstAsync(a => a.Id == model.ArrivalAirportId);
+
+            var departureTimeZone =
+                TimeZoneInfo.FindSystemTimeZoneById(departureAirport.TimeZoneId);
+
+            var arrivalTimeZone =
+                TimeZoneInfo.FindSystemTimeZoneById(arrivalAirport.TimeZoneId);
+
+            var departureUtc = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(model.DepartureTime, DateTimeKind.Unspecified),
+                departureTimeZone);
+
+            var arrivalUtc = TimeZoneInfo.ConvertTimeToUtc(
+                DateTime.SpecifyKind(model.ArrivalTime, DateTimeKind.Unspecified),
+                arrivalTimeZone);
+
+            if (arrivalUtc <= departureUtc)
+            {
+                ModelState.AddModelError(nameof(model.ArrivalTime), "The arrival time should be greater than departure time");
+                await AddAiportsAndAircraftsToModel(model);
+                return View(model);
+            }
+
+
             var flight = new Flight
             {
                 FlightNumber = flightNumber,
-                DepartureTime = model.DepartureTime,
-                ArrivalTime = model.ArrivalTime,
+                DepartureTime = departureUtc,
+                ArrivalTime = arrivalUtc,
                 DepartureAirportId = model.DepartureAirportId,
                 ArrivalAirportId = model.ArrivalAirportId,
                 AircraftId = model.AircraftId

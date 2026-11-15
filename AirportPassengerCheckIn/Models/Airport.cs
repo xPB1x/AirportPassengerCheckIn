@@ -7,5 +7,6 @@
         public String CodeIATA { get; set; } = String.Empty;
         public String Country { get; set; } = String.Empty;
         public String City { get; set; } = String.Empty;
+        public string TimeZoneId { get; set; } = string.Empty;
     }
 }
