@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.Data;
 using AirportPassengerCheckIn.Models.Identity;
 using AirportPassengerCheckIn.DTOs.ViewModels;
+using AirportPassengerCheckIn.Models;
 
 namespace AirportPassengerCheckIn.Controllers
 {
@@ -51,6 +52,108 @@ namespace AirportPassengerCheckIn.Controllers
                 });
             }
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(CreateUserViewModel model)
+        {
+            if (model.AccountType != "Passenger" &&
+                model.AccountType != "AirportEmployee")
+            {
+                ModelState.AddModelError(
+                    nameof(model.AccountType),
+                    "Недопустимый тип пользователя");
+            }
+
+            if (model.AccountType == "AirportEmployee")
+            {
+                if (string.IsNullOrWhiteSpace(model.FirstName))
+                    ModelState.AddModelError(nameof(model.FirstName), "Укажите имя");
+
+                if (string.IsNullOrWhiteSpace(model.LastName))
+                    ModelState.AddModelError(nameof(model.LastName), "Укажите фамилию");
+
+                if (string.IsNullOrWhiteSpace(model.Position))
+                    ModelState.AddModelError(nameof(model.Position), "Укажите должность");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                int? employeeId = null;
+                if (model.AccountType == "AirportEmployee")
+                {
+                    var employee = new AirportEmployee
+                    {
+                        FirstName = model.FirstName!.Trim(),
+                        LastName = model.LastName!.Trim(),
+                        MiddleName = model.MiddleName?.Trim(),
+                        Position = model.Position!.Trim()
+                    };
+
+                    _context.AirportEmployees.Add(employee);
+                    await _context.SaveChangesAsync();
+
+                    employeeId = employee.Id;
+                }
+
+                var email = model.Email.Trim();
+                var user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    AirportEmployeeId = employeeId,
+                };
+
+                var createResult = await _userManager.CreateAsync(user, model.Password);
+                if (!createResult.Succeeded)
+                {
+                    foreach (var error in createResult.Errors)
+                    {
+                        ModelState.AddModelError(
+                            string.Empty, error.Description);
+                    }
+
+                    await transaction.RollbackAsync();
+                    return View(model);
+                }
+
+                var role = model.AccountType;
+                var roleResult = await _userManager.CreateAsync(user, model.AccountType);
+                if (!roleResult.Succeeded)
+                {
+                    foreach (var error in createResult.Errors)
+                    {
+                        ModelState.AddModelError(
+                            string.Empty, error.Description);
+                    }
+
+                    await transaction.RollbackAsync();
+                    return View(model);
+                }
+
+                await transaction.CommitAsync();
+                TempData["SuccessMessage"] = "The User was completly created";
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
     }
 }
