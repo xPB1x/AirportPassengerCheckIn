@@ -273,5 +273,79 @@ namespace AirportPassengerCheckIn.Controllers
                 throw;
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Block(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (user.Id == _userManager.GetUserId(User))
+            {
+                TempData["ErrorMessage"] = "You can't block your Account";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                TempData["ErrorMessage"] = "You can't block Admin";
+                return RedirectToAction(nameof(Index));
+            }
+
+            await _userManager.SetLockoutEnabledAsync(user, true);
+
+            var result = await _userManager.SetLockoutEndDateAsync(
+                user,
+                DateTimeOffset.MaxValue);
+
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = string.Join("; ",
+                    result.Errors.Select(e => e.Description));
+                return RedirectToAction(nameof(Index));
+            }
+
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            TempData["SuccessMessage"] = "Пользователь заблокирован";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Unblock(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                TempData["ErrorMessage"] = "You can't unblock Admin";
+            }
+
+            var result = await _userManager.SetLockoutEndDateAsync(user, null);
+
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = string.Join("; ",
+                    result.Errors.Select(e => e.Description));
+                return RedirectToAction(nameof(Index));
+            }
+
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            TempData["SuccessMessage"] = "The user has unblocked";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
