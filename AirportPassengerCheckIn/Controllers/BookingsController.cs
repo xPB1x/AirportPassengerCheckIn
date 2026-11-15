@@ -23,9 +23,20 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet("{bookingNumber}")]
+        [Authorize]
         public async Task<ActionResult<BookingDTO>> GetBooking(string bookingNumber)
         {
-            var booking = await _context.Bookings
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool canViewAllBookings = User.IsInRole("Admin") || User.IsInRole("AirportEmployee");
+
+            var bookingQuery = _context.Bookings.AsQueryable();
+
+            if (!canViewAllBookings)
+            {
+                bookingQuery = bookingQuery.Where(b => b.UserId == userId);
+            }
+
+            var booking = await bookingQuery
                 .Include(b => b.Flight)
                     .ThenInclude(f => f.DepartureAirport)
                 .Include(b => b.Flight)
@@ -75,6 +86,7 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet("passenger/{passportNumber}")]
+        [Authorize(Roles = "AirportEmployee,Admin")]
         public async Task<ActionResult<ICollection<BookingDTO>>> GetByPassengerPassport(string passportNumber)
         {
             var bookings = await _context.Bookings
