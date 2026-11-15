@@ -1,0 +1,82 @@
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.CreateEmployeeViewModel
+
+@{
+    ViewData["Title"] = "Создание сотрудника";
+}
+
+<div class="container mt-5">
+    <h2>Создание сотрудника</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>  
+    }
+
+    <form asp-controller="Employees"
+          asp-action="Create"
+          method="post">
+
+        <div asp-validation-summary="ModelOnly"
+             class="text-danger mb-3"></div>
+
+        <h4 class="mt-4">Данные сотрудника</h4>
+
+        <div class="mb-3">
+            <label asp-for="LastName" class="form-label">Фамилия</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="FirstName" class="form-label">Имя</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="MiddleName" class="form-label">Отчество</label>
+            <input asp-for="MiddleName" class="form-control" />
+            <span asp-validation-for="MiddleName"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Position" class="form-label">Должность</label>
+            <input asp-for="Position" class="form-control" />
+            <span asp-validation-for="Position"
+                  class="text-danger"></span>
+        </div>
+
+        <h4 class="mt-4">Данные учётной записи</h4>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label">Пароль</label>
+            <input asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password"
+                  class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword"
+                   class="form-label">Подтверждение пароля</label>
+            <input asp-for="ConfirmPassword" class="form-control" />
+            <span asp-validation-for="ConfirmPassword"
+                  class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Создать сотрудника
+        </button>
+    </form>
+</div>
