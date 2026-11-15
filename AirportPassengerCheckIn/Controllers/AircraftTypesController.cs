@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using AirportPassengerCheckIn.Models.Identity;
 using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.DTOs.ViewModels.Aircrafts;
+using AirportPassengerCheckIn.Models;
 
 namespace AirportPassengerCheckIn.Controllers
 {
@@ -40,5 +41,50 @@ namespace AirportPassengerCheckIn.Controllers
 
             return View(aircraftTypes);
         }
+
+        [HttpGet]
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(AircraftTypeViewModel requestModel)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                return View(requestModel);
+            }
+
+            var aircraftCompany = requestModel.Company.Trim();
+            var aircraftModel = requestModel.Model.Trim();
+
+            bool exists = await _context.AircraftTypes.AnyAsync(
+                at => at.Company == aircraftCompany &&
+                at.Model == aircraftModel);
+
+            if (exists)
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    "Such AircraftType is already exists");
+                return View(requestModel);
+            }
+
+            var aircraftType = new AircraftType
+            {
+                Company = aircraftCompany,
+                Model = aircraftModel,
+                NumberOfSeats = requestModel.NumberOfSeats
+            };
+
+            _context.AircraftTypes.Add(aircraftType);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "AircraftType has added completly";
+
+            return RedirectToAction(nameof(Index));
+        }   
     }
 }
