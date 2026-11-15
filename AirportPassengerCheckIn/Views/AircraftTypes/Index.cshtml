@@ -35,6 +35,7 @@
                     <th>Модель</th>
                     <th>Количество мест</th>
                     <th>Количество самолётов</th>
+                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +46,13 @@
                         <td>@aircraftType.Model</td>
                         <td>@aircraftType.NumberOfSeats</td>
                         <td>@aircraftType.AircraftCount</td>
+                        <td>
+                            <a asp-action="Edit"
+                               asp-route-id="@aircraftType.Id"
+                               class="btn btn-sm btn-primary">
+                                Изменить
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>
