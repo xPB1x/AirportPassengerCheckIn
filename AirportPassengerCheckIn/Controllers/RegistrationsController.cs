@@ -124,6 +124,55 @@ namespace AirportPassengerCheckIn.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StartOnline(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                .FirstOrDefaultAsync(bp => bp.Booking.UserId == userId && bp.Id == id);
+
+            if (bookingPassenger == null)
+            {
+                return NotFound();
+            }
+
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+
+            if (booking.Status != BookingStatus.Confirmed)
+            {
+                return RedirectToAction(nameof(OnlineBookings));
+            }
+            if (flight.DepartureTime <= now ||
+                flight.DepartureTime > now.AddHours(24))
+            {
+                return RedirectToAction(nameof(OnlineBookings));
+            }
+            if (bookingPassenger.Registration != null)
+            {
+                return RedirectToAction(nameof(OnlineBookings));
+            }
+
+            var registration = new Registration
+            {
+                BookingPassengerId = bookingPassenger.Id,
+                RegistrationTime = now,
+                Type = RegistrationType.Online,
+                Status = RegistrationStatus.Active
+            };
+
+            _context.Registrations.Add(registration);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(OnlineBookings));
+        }
+
         [HttpGet]
         public async Task<IActionResult> ContinueOnline()
         {
