@@ -126,7 +126,7 @@ namespace AirportPassengerCheckIn.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> StartOnline(int id)
+        public async Task<IActionResult> ConfirmStartOnline(int id)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var now = DateTime.UtcNow;

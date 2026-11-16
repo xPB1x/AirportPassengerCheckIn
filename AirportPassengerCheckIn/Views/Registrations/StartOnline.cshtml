@@ -35,7 +35,7 @@
                 После подтверждения начнётся онлайн-регистрация пассажира.
             </div>
 
-            <form asp-action="StartOnline" method="post">
+            <form asp-action="ConfirmStartOnline" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="BookingPassengerId" />
 
