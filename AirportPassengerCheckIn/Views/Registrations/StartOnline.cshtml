@@ -1,0 +1,52 @@
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.StartOnlineViewModel
+
+@{
+    ViewData["Title"] = "Начало онлайн-регистрации";
+}
+
+<div class="container mt-4">
+    <h2>Онлайн-регистрация</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Информация о бронировании</h5>
+
+            <dl class="row mt-3">
+                <dt class="col-sm-4">Номер бронирования</dt>
+                <dd class="col-sm-8">@Model.BookingNumber</dd>
+
+                <dt class="col-sm-4">Рейс</dt>
+                <dd class="col-sm-8">@Model.FlightNumber</dd>
+
+                <dt class="col-sm-4">Пассажир</dt>
+                <dd class="col-sm-8">@Model.PassengerFullName</dd>
+
+                <dt class="col-sm-4">Откуда</dt>
+                <dd class="col-sm-8">@Model.DepartureAirport</dd>
+
+                <dt class="col-sm-4">Куда</dt>
+                <dd class="col-sm-8">@Model.ArrivalAirport</dd>
+
+                <dt class="col-sm-4">Время отправления</dt>
+                <dd class="col-sm-8">@Model.DepartureTime.ToString("dd.MM.yyyy HH:mm")</dd>
+            </dl>
+
+            <div class="alert alert-info">
+                После подтверждения начнётся онлайн-регистрация пассажира.
+            </div>
+
+            <form asp-action="StartOnline" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="BookingPassengerId" />
+
+                <button type="submit" class="btn btn-primary">
+                    Начать регистрацию
+                </button>
+
+                <a asp-action="OnlineBookings" class="btn btn-secondary ms-2">
+                    Назад
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
