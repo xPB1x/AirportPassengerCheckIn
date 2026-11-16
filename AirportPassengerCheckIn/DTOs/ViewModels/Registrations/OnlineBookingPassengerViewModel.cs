@@ -11,5 +11,7 @@ namespace AirportPassengerCheckIn.DTOs.ViewModels
         public RegistrationStatus? RegistrationStatus { get; set; }
 
         public bool CanRegister { get; set; }
+        public bool HasActiveRegistration { get; set; }
+        public bool IsRegistrationFinished { get; set; }
     }
 }

@@ -181,14 +181,6 @@ namespace AirportPassengerCheckIn.Controllers
             if (flight == null)
                 return NotFound();
 
-            if (await _context.Bookings.AnyAsync(b => b.FlightId == id))
-            {
-                TempData["ErrorMessage"] =
-                    "This flight cannot be edited because it has bookings.";
-
-                return RedirectToAction(nameof(Index));
-            }
-
             var model = new EditFlightViewModel
             {
                 Id = flight.Id,
@@ -221,13 +213,6 @@ namespace AirportPassengerCheckIn.Controllers
             if (flight == null)
                 return NotFound();
 
-            if (await _context.Bookings.AnyAsync(b => b.FlightId == model.Id))
-            {
-                TempData["ErrorMessage"] =
-                    "This flight cannot be edited because it has bookings.";
-
-                return RedirectToAction(nameof(Index));
-            }
 
             if (model.DepartureAirportId == model.ArrivalAirportId)
             {

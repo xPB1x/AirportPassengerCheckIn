@@ -80,6 +80,11 @@ namespace AirportPassengerCheckIn.Controllers
                     Passengers = b.BookingPassengers.Select(bp =>
                     {
                         var registration = bp.Registration;
+                        bool canRegister =
+                            b.Flight.DepartureTime > now &&
+                            b.Flight.DepartureTime <= now.AddHours(24) &&
+                            (registration == null || registration.Status == RegistrationStatus.Active);
+
                         return new OnlineBookingPassengerViewModel
                         {
                             BookingPassengerId = bp.Id,
@@ -88,9 +93,9 @@ namespace AirportPassengerCheckIn.Controllers
                                 $"{bp.Passenger.FirstName} " +
                                 $"{bp.Passenger.MiddleName}",
                             RegistrationStatus = registration?.Status,
-                            CanRegister = b.Flight.DepartureTime > now &&
-                                b.Flight.DepartureTime <= now.AddHours(24) &&
-                                registration == null
+                            CanRegister = canRegister,
+                            HasActiveRegistration = registration?.Status == RegistrationStatus.Active,
+                            IsRegistrationFinished = registration?.Status == RegistrationStatus.Finished
                         };
                     }).ToList(),
                 };

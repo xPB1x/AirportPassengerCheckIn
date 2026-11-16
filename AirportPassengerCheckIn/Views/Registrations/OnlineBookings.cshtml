@@ -52,28 +52,22 @@
                                 <strong>@passenger.FullName</strong>
 
                                 <div class="text-muted small">
-                                    @if (passenger.RegistrationStatus == RegistrationStatus.Finished)
+                                    @if (passenger.IsRegistrationFinished)
                                     {
                                         <span class="text-success">
                                             Регистрация завершена
                                         </span>
                                     }
-                                    else if (passenger.RegistrationStatus == RegistrationStatus.Active)
+                                    else if (passenger.HasActiveRegistration)
                                     {
                                         <span class="text-primary">
-                                            Идет регистрация
-                                        </span>
-                                    }
-                                    else if (passenger.RegistrationStatus == RegistrationStatus.Canceled)
-                                    {
-                                        <span class="text-danger">
-                                            Регистрация отменена
+                                            Регистрация не завершена
                                         </span>
                                     }
                                     else if (passenger.CanRegister)
                                     {
                                         <span class="text-success">
-                                            Идет регистрация
+                                            Регистрация доступна
                                         </span>
                                     }
                                     else
@@ -83,16 +77,24 @@
                                         </span>
                                     }
                                 </div>
-                            </div>
 
-                            @if (passenger.CanRegister)
-                            {
-                                <a asp-action="StartOnline"
-                                   asp-route-id="@passenger.BookingPassengerId"
-                                   class="btn btn-primary btn-sm">
-                                    Зарегистрироваться
-                                </a>
-                            }
+                                @if (passenger.CanRegister)
+                                {
+                                    <a asp-action="StartOnline"
+                                       asp-route-id="@passenger.BookingPassengerId"
+                                       class="btn btn-primary btn-sm">
+                                        Зарегистрироваться
+                                    </a>
+                                }
+                                else if (passenger.HasActiveRegistration)
+                                {
+                                    <a asp-action="ContinueOnline"
+                                       asp-route-id="@passenger.BookingPassengerId"
+                                       class="btn btn-primary btn-sm">
+                                        Продолжить регистрацию
+                                    </a>
+                                }
+                            </div>
                         </div>
                     }
                 </div>
