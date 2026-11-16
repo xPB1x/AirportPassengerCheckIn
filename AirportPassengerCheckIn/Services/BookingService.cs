@@ -68,7 +68,7 @@ namespace AirportPassengerCheckIn.Services
                 UserId = userId,
                 BookingNumber = await _numberGenerator.GenerateAsync(),
                 CreatedAt = DateTime.UtcNow,
-                Status = BookingStatus.Pending,
+                Status = BookingStatus.Confirmed,
                 FlightId = flight.Id
             };
 
