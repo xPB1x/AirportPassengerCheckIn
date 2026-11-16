@@ -37,7 +37,7 @@
 
             <form asp-action="ConfirmStartOnline" method="post">
                 @Html.AntiForgeryToken()
-                <input type="hidden" asp-for="BookingPassengerId" />
+                <input type="hidden" name="bookingPassengerId" value="@Model.BookingPassengerId"/>
 
                 <button type="submit" class="btn btn-primary">
                     Начать регистрацию
