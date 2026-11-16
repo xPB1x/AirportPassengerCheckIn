@@ -1,0 +1,102 @@
+﻿@using AirportPassengerCheckIn.Models.Enums
+@model List<AirportPassengerCheckIn.DTOs.ViewModels.Registrations.OnlineBookingViewModel>
+
+@{
+    ViewData["Title"] = "Онлайн регистрация";
+}
+
+<div class="container mt-4">
+    <h2>My bookings</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mt-3">
+            У вас нет активных бронирований
+        </div>
+    }
+    else
+    {
+        @foreach (var booking in Model)
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Бронирование @booking.BookingNumber
+                    </h5>
+
+                    <p>
+                        <strong>Рейс</strong>
+                        @booking.FlightNumber
+                    </p>
+
+                    <p>
+                        <strong>Маршрут</strong>
+                        @booking.DepartureAirport
+                        -
+                        @booking.ArrivalAirport
+                    </p>
+
+                    <p>
+                        <strong>Отправление</strong>
+                        @booking.DepartureTime.ToString("dd.MM.yyyy HH:mm")
+                    </p>
+
+                    <hr />
+
+                    <h6>Пассажиры</h6>
+
+                    @foreach (var passenger in booking.Passengers)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <strong>@passenger.FullName</strong>
+
+                                <div class="text-muted small">
+                                    @if (passenger.RegistrationStatus == RegistrationStatus.Finished)
+                                    {
+                                        <span class="text-success">
+                                            Регистрация завершена
+                                        </span>
+                                    }
+                                    else if (passenger.RegistrationStatus == RegistrationStatus.Active)
+                                    {
+                                        <span class="text-primary">
+                                            Идет регистрация
+                                        </span>
+                                    }
+                                    else if (passenger.RegistrationStatus == RegistrationStatus.Canceled)
+                                    {
+                                        <span class="text-danger">
+                                            Регистрация отменена
+                                        </span>
+                                    }
+                                    else if (passenger.CanRegister)
+                                    {
+                                        <span class="text-success">
+                                            Идет регистрация
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>
+                                            Регистрация откроется за 24 часа до отправления
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+
+                            @if (passenger.CanRegister)
+                            {
+                                <a asp-action="StartOnline"
+                                   asp-route-id="@passenger.BookingPassengerId"
+                                   class="btn btn-primary btn-sm">
+                                    Зарегистрироваться
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
