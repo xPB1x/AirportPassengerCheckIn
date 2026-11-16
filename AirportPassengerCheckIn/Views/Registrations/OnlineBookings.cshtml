@@ -1,11 +1,22 @@
-﻿@using AirportPassengerCheckIn.Models.Enums
-@model List<AirportPassengerCheckIn.DTOs.ViewModels.Registrations.OnlineBookingViewModel>
+﻿@model List<AirportPassengerCheckIn.DTOs.ViewModels.Registrations.OnlineBookingViewModel>
 
 @{
     ViewData["Title"] = "Онлайн регистрация";
 }
 
 <div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["ErrorMessage"]
+        </div>
+    }
     <h2>My bookings</h2>
 
     @if (!Model.Any())

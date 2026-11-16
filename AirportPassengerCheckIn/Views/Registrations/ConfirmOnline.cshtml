@@ -1,0 +1,65 @@
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.ConfirmOnlineViewModel
+
+@{
+    ViewData["Title"] = "Подтверждение онлайн-регистрации";
+}
+
+<div class="container mt-4">
+    <h2>Подтверждение онлайн-регистрации\</h2>
+
+    <div class="alert alert-info mt-3">
+        Проверьте правильность данных перед завершением регистрации.
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Информация о пассажире и рейсе</h5>
+
+            <dl class="row mt-3">
+                <dt class="col-sm-4">Номер бронирования</dt>
+                <dd class="col-sm-8">@Model.BookingNumber</dd>
+
+                <dt class="col-sm-4">Номер рейса</dt>
+                <dd class="col-sm-8">@Model.FlightNumber</dd>
+
+                <dt class="col-sm-4">Пассажир</dt>
+                <dd class="col-sm-8">@Model.PassengerName</dd>
+
+                <dt class="col-sm-4">Маршрут</dt>
+                <dd class="col-sm-8">
+                    @Model.DepartureAirport — @Model.ArrivalAirport
+                </dd>
+
+                <dt class="col-sm-4">Время отправления</dt>
+                <dd class="col-sm-8">
+                    @Model.DepartureTime.ToString("dd.MM.yyyy HH:mm")
+                </dd>
+
+                <dt class="col-sm-4">Выбранное место</dt>
+                <dd class="col-sm-8">
+                    <strong>@Model.SeatNumber</strong>
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <form asp-action="FinishOnline" method="post">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   name="bookingPassengerId"
+                   value="@Model.BookingPassengerId" />
+
+            <button type="submit" class="btn btn-success">
+                Подтвердить и завершить регистрацию
+            </button>
+        </form>
+
+        <a asp-action="SelectSeat"
+           asp-route-id="@Model.BookingPassengerId"
+           class="btn btn-secondary">
+            Вернуться к выбору места
+        </a>
+    </div>
+</div>
