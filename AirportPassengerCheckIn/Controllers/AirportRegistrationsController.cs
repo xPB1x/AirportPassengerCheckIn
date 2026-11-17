@@ -1,11 +1,15 @@
 ﻿using AirportPassengerCheckIn.Data;
 using AirportPassengerCheckIn.DTOs.ViewModels.Registrations;
+using AirportPassengerCheckIn.Models;
 using AirportPassengerCheckIn.Models.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AirportPassengerCheckIn.Controllers
 {
+    [Authorize(Roles = ("Admin,AirportEmployee"))]
     public class AirportRegistrationsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -97,6 +101,70 @@ namespace AirportPassengerCheckIn.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StartRegistration(int bookingPassengerId)
+        {
+            var now = DateTime.UtcNow;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+            if (bookingPassenger == null)
+            {
+                return NotFound();
+            }
+
+            if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
+                TempData["ErrorMessage"] = "The booking is not confirmed";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var departureTime = bookingPassenger.Booking.Flight.DepartureTime;
+            if (departureTime <= now || departureTime > now.AddHours(24))
+            {
+                TempData["ErrorMessage"] = "Registration is only available 24 hours before departure.";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            if (bookingPassenger.Registration != null)
+            {
+                TempData["ErrorMessage"] = "Registraion is already exists";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var airportEmployeeId = await _context.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.AirportEmployeeId)
+                .FirstOrDefaultAsync();
+
+            if (User.IsInRole("AirportEmployee") && airportEmployeeId == null)
+                return Forbid();
+
+            var registration = new Registration
+            {
+                RegistrationTime = now,
+                Type = RegistrationType.Airport,
+                Status = RegistrationStatus.Active,
+                BookingPassengerId = bookingPassenger.Id,
+                AirportEmployeeId = airportEmployeeId
+            };
+
+            _context.Registrations.Add(registration);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Registation has started succesfully";
+
+            return RedirectToAction(nameof(BookingSearch));
+
         }
     }
 }

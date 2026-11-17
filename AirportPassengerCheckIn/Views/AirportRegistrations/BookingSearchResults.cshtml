@@ -5,6 +5,19 @@
 }
 
 <div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-3">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mt-3">
+            @TempData["ErrorMessage"]
+        </div>
+    }
     <h2>Результаты поиска пассажира</h2>
 
     <div class="card mt-3">
@@ -110,6 +123,17 @@
                             </dd>
                         }
                     </dl>
+                    @if (booking.RegistrationStatus == null)
+                    {
+                        <form asp-action="StartRegistration" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden"
+                                name="bookingPassengerId"
+                                value="@booking.BookingPassengerId" />
+
+                            <button type="submit" class="btn btn-primary">Начать регистрацию</button>
+                        </form>
+                    }
                 </div>
             </div>
         }
