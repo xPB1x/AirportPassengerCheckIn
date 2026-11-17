@@ -1,0 +1,74 @@
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.ConfirmViewModel
+
+@{
+    ViewData["Title"] = "Подтверждение регистрации";
+}
+
+<div class="container mt-4">
+    <h2>Подтверждение регистрации</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Данные пассажира</h5>
+
+            <dl class="row mt-3">
+                <dt class="col-sm-4">Пассажир</dt>
+                <dd class="col-sm-8">@Model.PassengerName</dd>
+
+                <dt class="col-sm-4">Номер паспорта</dt>
+                <dd class="col-sm-8">@Model.PassengerPassport</dd>
+
+                <dt class="col-sm-4">Номер бронирования</dt>
+                <dd class="col-sm-8">@Model.BookingNumber</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Информация о рейсе</h5>
+
+            <dl class="row mt-3">
+                <dt class="col-sm-4">Рейс</dt>
+                <dd class="col-sm-8">@Model.FlightNumber</dd>
+
+                <dt class="col-sm-4">Маршрут</dt>
+                <dd class="col-sm-8">
+                    @Model.DepartureAirport — @Model.ArrivalAirport
+                </dd>
+
+                <dt class="col-sm-4">Время вылета</dt>
+                <dd class="col-sm-8">
+                    @Model.DepartureTime.ToString("dd.MM.yyyy HH:mm")
+                </dd>
+
+                <dt class="col-sm-4">Место</dt>
+                <dd class="col-sm-8">@Model.SeatNumber</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="alert alert-info mt-3">
+        Проверьте правильность данных перед завершением регистрации.
+    </div>
+
+    <form asp-action="Finish" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden"
+               name="bookingPassengerId"
+               value="@Model.BookingPassengerId" />
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                Завершить регистрацию
+            </button>
+
+            <a asp-action="SelectSeat"
+               asp-route-id="@Model.BookingPassengerId"
+               class="btn btn-secondary">
+                Изменить место
+            </a>
+        </div>
+    </form>
+</div>

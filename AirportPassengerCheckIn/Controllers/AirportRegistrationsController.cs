@@ -320,7 +320,81 @@ namespace AirportPassengerCheckIn.Controllers
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"The seat {seat.SeatNumber} has been choosen completly";
-            return RedirectToAction(nameof(SelectSeat), new { id = bookingPassengerId });
+            return RedirectToAction(nameof(ConfirmRegistration), new { id = bookingPassengerId });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmRegistration(int id)
+        {
+            var now = DateTime.UtcNow;
+            var bookingPassenger = await _context.BookingPassengers
+            .Include(bp => bp.Booking)
+                .ThenInclude(b => b.Flight)
+                    .ThenInclude(f => f.DepartureAirport)
+            .Include(bp => bp.Booking)
+                .ThenInclude(b => b.Flight)
+                    .ThenInclude(f => f.ArrivalAirport)
+            .Include(bp => bp.Registration)
+                .ThenInclude(r => r!.Seat)
+            .Include(bp => bp.Passenger)
+            .FirstOrDefaultAsync(bp => bp.Id == id);
+
+            if (bookingPassenger == null)
+                return NotFound();
+
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                registration == null ||
+                registration.Type != RegistrationType.Airport ||
+                registration.Status != RegistrationStatus.Active ||
+                registration.SeatId == null ||
+                flight.DepartureTime <= now ||
+                flight.DepartureTime > now.AddHours(24))
+            {
+                TempData["ErrorMessage"] = "Can't confirm registration";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var departureTime = DateTime.SpecifyKind(
+                flight.DepartureTime,
+                DateTimeKind.Utc);
+
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(
+                flight.DepartureAirport.TimeZoneId);
+
+            departureTime = TimeZoneInfo.ConvertTimeFromUtc(
+                departureTime,
+                timeZone);
+
+            var model = new ConfirmViewModel
+            {
+                BookingPassengerId = bookingPassenger.Id,
+                BookingNumber = booking.BookingNumber,
+
+                PassengerName = string.Join(" ", new[]
+                {
+                    bookingPassenger.Passenger.LastName,
+                    bookingPassenger.Passenger.FirstName,
+                    bookingPassenger.Passenger.MiddleName
+                }.Where(s => !string.IsNullOrWhiteSpace(s))),
+
+                PassengerPassport = bookingPassenger.Passenger.PassportNumber,
+                FlightNumber = flight.FlightNumber,
+
+                DepartureAirport =
+                    $"{flight.DepartureAirport.City} ({flight.DepartureAirport.CodeIATA})",
+
+                ArrivalAirport =
+                    $"{flight.ArrivalAirport.City} ({flight.ArrivalAirport.CodeIATA})", 
+
+                DepartureTime = departureTime,
+                SeatNumber = registration.Seat!.SeatNumber
+            };
+
+            return View(model);
         }
     }
 }

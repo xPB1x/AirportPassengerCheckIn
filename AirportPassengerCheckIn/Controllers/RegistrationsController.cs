@@ -482,6 +482,7 @@ namespace AirportPassengerCheckIn.Controllers
                     bookingPassenger.Passenger.FirstName,
                     bookingPassenger.Passenger.MiddleName
                 }.Where(s => !string.IsNullOrWhiteSpace(s))),
+                PassengerPassport = bookingPassenger.Passenger.PassportNumber,
 
                 DepartureAirport =
                     $"{flight.DepartureAirport.City} ({flight.DepartureAirport.CodeIATA})",
