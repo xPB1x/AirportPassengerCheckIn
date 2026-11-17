@@ -142,10 +142,10 @@ namespace AirportPassengerCheckIn.Controllers
 
             if (bookingPassenger.Registration != null)
             {
-                //if (bookingPassenger.Registration.Status == RegistrationStatus.Active)
-                //{
-                //    return RedirectToAction(nameof(ContinueOnline), new { id });
-                //}
+                if (bookingPassenger.Registration.Status == RegistrationStatus.Active)
+                {
+                    return RedirectToAction(nameof(ContinueOnline), new { id });
+                }
                 return RedirectToAction(nameof(OnlineBookings));
             }
 
@@ -470,7 +470,7 @@ namespace AirportPassengerCheckIn.Controllers
                 DateTime.SpecifyKind(flight.DepartureTime, DateTimeKind.Utc),
                 timeZone);
 
-            var model = new ConfirmOnlineViewModel
+            var model = new ConfirmViewModel
             {
                 BookingPassengerId = bookingPassenger.Id,
                 BookingNumber = booking.BookingNumber,

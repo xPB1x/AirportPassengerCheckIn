@@ -1,4 +1,4 @@
-﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.ConfirmOnlineViewModel
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.ConfirmViewModel
 
 @{
     ViewData["Title"] = "Подтверждение онлайн-регистрации";
@@ -24,6 +24,9 @@
 
                 <dt class="col-sm-4">Пассажир</dt>
                 <dd class="col-sm-8">@Model.PassengerName</dd>
+
+                <dt class="col-sm-4">Паспорт</dt>
+                <dd class="col-sm-8">@Model.PassengerPassport</dd>
 
                 <dt class="col-sm-4">Маршрут</dt>
                 <dd class="col-sm-8">
