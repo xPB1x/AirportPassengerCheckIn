@@ -163,8 +163,98 @@ namespace AirportPassengerCheckIn.Controllers
 
             TempData["SuccessMessage"] = "Registation has started succesfully";
 
-            return RedirectToAction(nameof(BookingSearch));
+            return RedirectToAction(nameof(SelectSeat), new {id = bookingPassenger.Id});
 
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SelectSeat(int id)
+        {
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                        .ThenInclude(f => f.DepartureAirport)
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                        .ThenInclude(f => f.ArrivalAirport)
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                        .ThenInclude(f => f.Aircraft)
+                            .ThenInclude(a => a.Seats)
+                .Include(bp => bp.Passenger)
+                .Include(bp => bp.Registration)
+                .FirstOrDefaultAsync(bp => bp.Id == id);
+
+            if (bookingPassenger == null)
+            {
+                return NotFound();
+            }
+
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                flight.DepartureTime <= now ||
+                flight.DepartureTime > now.AddHours(24) ||
+                registration == null ||
+                registration.Status != RegistrationStatus.Active)
+            {
+                TempData["ErrorMessage"] = "You can't choose the seat";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var occupiedSeatIds = await _context.Registrations
+                .Where(r =>
+                    r.BookingPassenger.Booking.Flight.Id == flight.Id &&
+                    r.SeatId != null &&
+                    r.Status != RegistrationStatus.Canceled &&
+                    r.BookingPassengerId != bookingPassenger.Id)
+                .Select(r => r.SeatId!.Value)
+                .ToListAsync();
+
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById(flight.DepartureAirport.TimeZoneId);
+            var localDepartureTime = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.SpecifyKind(flight.DepartureTime, DateTimeKind.Utc),
+                timeZone);
+
+            var model = new SelectSeatViewModel
+            {
+                BookingPassengerId = bookingPassenger.Id,
+                BookingNumber = booking.BookingNumber,
+                FlightNumber = flight.FlightNumber,
+
+                PassengerName = string.Join(" ", new[]
+                    {
+                        bookingPassenger.Passenger.LastName,
+                        bookingPassenger.Passenger.FirstName,
+                        bookingPassenger.Passenger.MiddleName
+                    }.Where(s => !string.IsNullOrWhiteSpace(s))),
+
+                DepartureAirport =
+                    $"{flight.DepartureAirport.City} ({flight.DepartureAirport.CodeIATA})",
+
+                ArrivalAirport =
+                    $"{flight.ArrivalAirport.City} ({flight.ArrivalAirport.CodeIATA})",
+
+                DepartureTime = localDepartureTime,
+
+                SelectedSeatId = registration.SeatId,
+
+                Seats = flight.Aircraft.Seats
+                    .OrderBy(s => s.SeatNumber)
+                    .Select(s => new SeatViewModel
+                    {
+                        Id = s.Id,
+                        SeatNumber = s.SeatNumber,
+                        Class = s.Class,
+                        IsOccupied = occupiedSeatIds.Contains(s.Id)
+                    })
+                    .ToList()
+            };
+            return View(model);
         }
     }
 }
