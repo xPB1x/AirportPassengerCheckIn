@@ -202,7 +202,7 @@ namespace AirportPassengerCheckIn.Controllers
                 registration == null ||
                 registration.Status != RegistrationStatus.Active)
             {
-                TempData["ErrorMessage"] = "You can't choose the seat";
+                TempData["ErrorMessage"] = "You can't continue registration";
                 return RedirectToAction(nameof(BookingSearch));
             }
 
@@ -255,6 +255,72 @@ namespace AirportPassengerCheckIn.Controllers
                     .ToList()
             };
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmSelectSeat(
+            int bookingPassengerId,
+            int? selectedSeatId)
+        {
+            if (selectedSeatId == null)
+            {
+                TempData["ErrorMessage"] = "You have to choose the seat";
+                return RedirectToAction(nameof(SelectSeat), new { id = bookingPassengerId });
+            }
+
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Registration)
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+            if (bookingPassenger == null)
+            {
+                return NotFound();
+            }
+
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                flight.DepartureTime <= now ||
+                flight.DepartureTime > now.AddHours(24) ||
+                registration == null ||
+                registration.Status != RegistrationStatus.Active)
+            {
+                TempData["ErrorMessage"] = "You can't continue registration";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var seat = await _context.Seats.FirstOrDefaultAsync(s => s.Id == selectedSeatId);
+            if (seat == null || seat.AircraftId != flight.AircraftId)
+            {
+                TempData["ErrorMessage"] = "This seat is not available";
+                return RedirectToAction(nameof(SelectSeat), new {id=bookingPassengerId});
+            }
+
+            var isOccupied = await _context.Registrations
+                .AnyAsync(r =>
+                    r.BookingPassenger.Booking.Flight.Id == flight.Id &&
+                    r.BookingPassengerId != bookingPassengerId &&
+                    r.SeatId == seat.Id &&
+                    (r.Status == RegistrationStatus.Active || r.Status == RegistrationStatus.Finished));
+
+            if (isOccupied)
+            {
+                TempData["ErrorMessaga"] = "This seat is already occupied";
+                return RedirectToAction(nameof(SelectSeat), new {id=bookingPassengerId});
+            }
+
+            registration.SeatId = seat.Id;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"The seat {seat.SeatNumber} has been choosen completly";
+            return RedirectToAction(nameof(SelectSeat), new { id = bookingPassengerId });
         }
     }
 }
