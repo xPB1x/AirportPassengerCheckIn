@@ -1,0 +1,117 @@
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.AirportBookingViewModel
+
+@{
+    ViewData["Title"] = "Результаты поиска";
+}
+
+<div class="container mt-4">
+    <h2>Результаты поиска пассажира</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title">Поиск по паспорту</h5>
+
+            <form asp-action="BookingSearchResults" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label for="passportNumber" class="form-label">
+                        Номер паспорта
+                    </label>
+
+                    <input type="text"
+                           id="passportNumber"
+                           name="passportNumber"
+                           value="@Model.PassportNumber"
+                           class="form-control"
+                           required />
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Найти
+                </button>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.Bookings.Count == 0)
+    {
+        <div class="alert alert-warning mt-4">
+            Подтверждённых бронирований пассажира с данным паспортом не найдено
+        </div>
+    }
+    else
+    {
+        <h4 class="mt-4">
+            Найдено бронирований: @Model.Bookings.Count
+        </h4>
+
+        @foreach (var booking in Model.Bookings)
+        {
+            <div class="card mt-3">
+                <div class="card-header">
+                    <strong>Бронирование № @booking.BookingNumber</strong>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Пассажир</dt>
+                        <dd class="col-sm-8">@booking.PassengerName</dd>
+
+                        <dt class="col-sm-4">Номер паспорта</dt>
+                        <dd class="col-sm-8">@booking.PassportNumber</dd>
+
+                        <dt class="col-sm-4">Рейс</dt>
+                        <dd class="col-sm-8">@booking.FlightNumber</dd>
+
+                        <dt class="col-sm-4">Маршрут</dt>
+                        <dd class="col-sm-8">
+                            @booking.DepartureAirport — @booking.ArrivalAirport
+                        </dd>
+
+                        <dt class="col-sm-4">Время вылета</dt>
+                        <dd class="col-sm-8">
+                            @booking.DepartureTime.ToString("dd.MM.yyyy HH:mm")
+                        </dd>
+
+                        <dt class="col-sm-4">Статус регистрации</dt>
+                        <dd class="col-sm-8">
+                            @if (booking.RegistrationStatus == null)
+                            {
+                                <span class="text-secondary">
+                                    Не начата
+                                </span>
+                            }
+                            else if (booking.RegistrationStatus == "Active")
+                            {
+                                <span class="text-primary">
+                                    Не завершена
+                                </span>
+                            }
+                            else if (booking.RegistrationStatus == "Finished")
+                            {
+                                <span class="text-success">
+                                    Завершена
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-danger">
+                                    Отменена
+                                </span>
+                            }
+                        </dd>
+
+                        @if (!string.IsNullOrEmpty(booking.SeatNumber))
+                        {
+                            <dt class="col-sm-4">Место</dt>
+                            <dd class="col-sm-8">
+                                @booking.SeatNumber
+                            </dd>
+                        }
+                    </dl>
+                </div>
+            </div>
+        }
+    }
+</div>
