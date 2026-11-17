@@ -19,8 +19,15 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet]
-        public IActionResult BookingSearch()
+        public async Task<IActionResult> BookingSearch()
         {
+            string? passportNumber = TempData["SearchPassport"] as string;
+            if (!string.IsNullOrWhiteSpace(passportNumber))
+            {
+                var model = await GetBookingSearchResults(passportNumber);
+                return View("BookingSearchResults", model);
+            }
+
             return View();
         }
 
@@ -30,49 +37,58 @@ namespace AirportPassengerCheckIn.Controllers
         {
             if (string.IsNullOrWhiteSpace(passportNumber))
             {
-                ModelState.AddModelError(
-                    nameof(passportNumber),
-                    "Введите номер паспорта.");
-
+                ModelState.AddModelError(nameof(passportNumber), "Введите номер пасспорта");
                 return View(new AirportBookingViewModel());
             }
 
-            passportNumber = passportNumber.Trim();
+            var model = await GetBookingSearchResults(passportNumber);
+            return View(model);
+        }
+
+        private async Task<AirportBookingViewModel> GetBookingSearchResults(
+            string passportNumber)
+        {
+            passportNumber = passportNumber.Trim().ToUpper();
+
             var now = DateTime.UtcNow;
 
             var bookings = await _context.Bookings
-            .Where(b =>
-                b.Status == BookingStatus.Confirmed &&
-                b.Flight.DepartureTime > now &&
-                b.BookingPassengers.Any(bp =>
-                    bp.Passenger.PassportNumber.ToUpper() == passportNumber))
-            .SelectMany(b => b.BookingPassengers
-                .Where(bp =>
-                    bp.Passenger.PassportNumber.ToUpper() == passportNumber)
-                .Select(bp => new AirportBookingItemViewModel
-                {
-                    BookingPassengerId = bp.Id,
-                    BookingNumber = b.BookingNumber,
-                    FlightNumber = b.Flight.FlightNumber,
-                    DepartureAirport = b.Flight.DepartureAirport.CodeIATA,
-                    ArrivalAirport = b.Flight.ArrivalAirport.CodeIATA,
-                    DepartureTime = b.Flight.DepartureTime,
-                    DepartureTimeZoneId = b.Flight.DepartureAirport.TimeZoneId,
-                    PassengerName =
-                        bp.Passenger.LastName + " " +
-                        bp.Passenger.FirstName + " " +
-                        (bp.Passenger.MiddleName ?? ""),
-                    PassportNumber = bp.Passenger.PassportNumber,
-                    RegistrationStatus = bp.Registration == null
-                        ? null
-                        : bp.Registration.Status.ToString(),
-                    SeatNumber = bp.Registration == null ||
-                                 bp.Registration.Seat == null
-                        ? null
-                        : bp.Registration.Seat.SeatNumber
-                }))
-            .OrderBy(b => b.DepartureTime)
-            .ToListAsync();
+                .Where(b =>
+                    b.Status == BookingStatus.Confirmed &&
+                    b.Flight.DepartureTime > now &&
+                    b.BookingPassengers.Any(bp =>
+                        bp.Passenger.PassportNumber.ToUpper() == passportNumber))
+                .SelectMany(b => b.BookingPassengers
+                    .Where(bp =>
+                        bp.Passenger.PassportNumber.ToUpper() == passportNumber)
+                    .Select(bp => new AirportBookingItemViewModel
+                    {
+                        BookingPassengerId = bp.Id,
+                        BookingNumber = b.BookingNumber,
+                        FlightNumber = b.Flight.FlightNumber,
+                        DepartureAirport = b.Flight.DepartureAirport.CodeIATA,
+                        ArrivalAirport = b.Flight.ArrivalAirport.CodeIATA,
+                        DepartureTime = b.Flight.DepartureTime,
+                        DepartureTimeZoneId = b.Flight.DepartureAirport.TimeZoneId,
+
+                        PassengerName =
+                            bp.Passenger.LastName + " " +
+                            bp.Passenger.FirstName + " " +
+                            (bp.Passenger.MiddleName ?? ""),
+
+                        PassportNumber = bp.Passenger.PassportNumber,
+
+                        RegistrationStatus = bp.Registration == null
+                            ? null
+                            : bp.Registration.Status.ToString(),
+
+                        SeatNumber = bp.Registration == null ||
+                                     bp.Registration.Seat == null
+                            ? null
+                            : bp.Registration.Seat.SeatNumber
+                    }))
+                .OrderBy(b => b.DepartureTime)
+                .ToListAsync();
 
             foreach (var booking in bookings)
             {
@@ -94,13 +110,11 @@ namespace AirportPassengerCheckIn.Controllers
                 }
             }
 
-            var model = new AirportBookingViewModel
+            return new AirportBookingViewModel
             {
                 PassportNumber = passportNumber,
                 Bookings = bookings
             };
-
-            return View(model);
         }
 
         [HttpPost]
@@ -395,6 +409,77 @@ namespace AirportPassengerCheckIn.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Finish(int bookingPassengerId)
+        {
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                    .ThenInclude(r => r!.Seat)
+                .Include(bp => bp.Passenger)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+            if (bookingPassenger == null)
+            {
+                return NotFound();
+            }
+
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                registration == null ||
+                registration.Type != RegistrationType.Airport ||
+                registration.Status != RegistrationStatus.Active ||
+                registration.SeatId == null ||
+                flight.DepartureTime <= now ||
+                flight.DepartureTime > now.AddHours(24))
+            {
+                TempData["ErrorMessage"] = "Can't finish the registration";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var seat = await _context.Seats
+                .FirstOrDefaultAsync(s => s.Id == registration.SeatId);
+
+            if (seat == null || seat.AircraftId != flight.AircraftId)
+            {
+                TempData["ErrorMessage"] = "Seat is not available";
+                return RedirectToAction(nameof(SelectSeat), new {id=bookingPassengerId});
+            }
+
+            var isOccupied = await _context.Registrations
+                .AnyAsync(r =>
+                    r.BookingPassenger.Booking.FlightId == flight.Id &&
+                    r.BookingPassengerId != bookingPassengerId &&
+                    r.SeatId == registration.SeatId &&
+                    (r.Status == RegistrationStatus.Active ||
+                     r.Status == RegistrationStatus.Finished));
+
+            if (isOccupied)
+            {
+                TempData["ErrorMessage"] =
+                    "This seat is already occupied";
+
+                return RedirectToAction(
+                    nameof(SelectSeat),
+                    new { id = bookingPassengerId });
+            }
+
+            registration.Status = RegistrationStatus.Finished;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Registartion has been completed succesfully";
+
+            TempData["SearchPassport"] = bookingPassenger.Passenger.PassportNumber;
+
+            return RedirectToAction(nameof(BookingSearch));
         }
     }
 }
