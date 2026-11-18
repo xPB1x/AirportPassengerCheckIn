@@ -12,6 +12,7 @@
         public string PassengerName { get; set; } = string.Empty;
         public string PassportNumber { get; set; } = string.Empty;
         public string? RegistrationStatus { get; set; }
+        public string? RegistrationType { get; set; }
         public string? SeatNumber { get; set; }
     }
 }

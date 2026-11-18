@@ -134,6 +134,14 @@
                             <button type="submit" class="btn btn-primary">Начать регистрацию</button>
                         </form>
                     }
+                    @if (booking.RegistrationStatus == "Active")
+                    {
+                        <a asp-action="ContinueAirport"
+                            asp-route-id="@booking.BookingPassengerId"
+                            class="btn btn-primary">
+                            Продолжить регистрацию
+                        </a>
+                    }
                 </div>
             </div>
         }

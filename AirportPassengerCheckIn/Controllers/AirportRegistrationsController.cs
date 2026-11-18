@@ -81,6 +81,9 @@ namespace AirportPassengerCheckIn.Controllers
                         RegistrationStatus = bp.Registration == null
                             ? null
                             : bp.Registration.Status.ToString(),
+                        RegistrationType = bp.Registration == null
+                            ? null
+                            : bp.Registration.Type.ToString(),
 
                         SeatNumber = bp.Registration == null ||
                                      bp.Registration.Seat == null
@@ -178,7 +181,79 @@ namespace AirportPassengerCheckIn.Controllers
             TempData["SuccessMessage"] = "Registation has started succesfully";
 
             return RedirectToAction(nameof(SelectSeat), new {id = bookingPassenger.Id});
+        }
 
+        [HttpGet]
+        public async Task<IActionResult> ContinueAirport(int id)
+        {
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                .FirstOrDefaultAsync(bp => bp.Id == id);
+
+            if (bookingPassenger == null)
+                return NotFound();
+
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                registration == null ||
+                registration.Status != RegistrationStatus.Active ||
+                flight.DepartureTime <= now ||
+                flight.DepartureTime > now.AddHours(24))
+            {
+                TempData["Error"] = "You can't continue registration";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            if (registration.Type == RegistrationType.Online)
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var airportEmployeeId = await _context.Users
+                    .Where(u => u.Id == userId)
+                    .Select(u => u.AirportEmployeeId)
+                    .FirstOrDefaultAsync();
+
+                if (User.IsInRole("AirportEmployee") && airportEmployeeId == null)
+                    return Forbid();
+
+                _context.Registrations.Remove(registration);
+
+                registration = new Registration
+                {
+                    RegistrationTime = now,
+                    Type = RegistrationType.Airport,
+                    Status = RegistrationStatus.Active,
+                    BookingPassengerId = bookingPassenger.Id,
+                    AirportEmployeeId = airportEmployeeId
+                };
+
+                _context.Registrations.Add(registration);
+
+                await _context.SaveChangesAsync();
+            }
+            else if (registration.Type != RegistrationType.Airport)
+            {
+                TempData["Error"] = "Invalid registration type";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            if (registration.SeatId == null)
+            {
+                return RedirectToAction(
+                    nameof(SelectSeat),
+                    new { id = bookingPassenger.Id });
+            }
+
+            return RedirectToAction(
+                nameof(ConfirmRegistration),
+                new { id = bookingPassenger.Id });
         }
 
         [HttpGet]
