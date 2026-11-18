@@ -221,6 +221,9 @@ namespace AirportPassengerCheckIn.Migrations
                     b.Property<int>("BookingId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("CountPaidBaggages")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PassengerId")
                         .HasColumnType("integer");
 
@@ -261,6 +264,9 @@ namespace AirportPassengerCheckIn.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<decimal>("MaxBaggageWeight")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 

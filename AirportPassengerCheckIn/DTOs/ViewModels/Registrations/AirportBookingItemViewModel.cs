@@ -14,5 +14,7 @@
         public string? RegistrationStatus { get; set; }
         public string? RegistrationType { get; set; }
         public string? SeatNumber { get; set; }
+        public int CountPaidBaggage { get; set; }
+        public int RegisteredBaggageCount { get; set; }
     }
 }

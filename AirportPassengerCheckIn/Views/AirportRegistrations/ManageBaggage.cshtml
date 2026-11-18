@@ -1,0 +1,53 @@
+﻿@model AirportPassengerCheckIn.DTOs.ViewModels.Registrations.BaggageViewModel
+
+@{
+    ViewData["Title"] = "Оформление багажа";
+}
+
+<div class="container mt-4">
+    <h2>Оформление багажа</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5>Информация о пассажире</h5>
+
+            <p><strong>Пассажир:</strong> @Model.PassengerName</p>
+            <p><strong>Бронирование:</strong> @Model.BookingNumber</p>
+            <p><strong>Рейс:</strong> @Model.FlightNumber</p>
+            <p><strong>Оплачено мест:</strong> @Model.CountPaidBaggage</p>
+            <p><strong>Максимальный вес одного места:</strong> @Model.MaxBaggageWeight кг</p>
+            <p><strong>Осталось оформить:</strong> @Model.RemainingBaggageCount</p>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5>Оформленный багаж</h5>
+
+            @if (Model.Baggages.Count == 0)
+            {
+                <p>Багаж ещё не оформлен.</p>
+            }
+            else
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Вес</th>
+                            <th>Негабаритный</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var baggage in Model.Baggages)
+                        {
+                            <tr>
+                                <td>@baggage.Weight кг</td>
+                                <td>@(baggage.IsOversized ? "Да" : "Нет")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>

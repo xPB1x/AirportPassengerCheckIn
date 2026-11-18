@@ -88,7 +88,9 @@ namespace AirportPassengerCheckIn.Controllers
                         SeatNumber = bp.Registration == null ||
                                      bp.Registration.Seat == null
                             ? null
-                            : bp.Registration.Seat.SeatNumber
+                            : bp.Registration.Seat.SeatNumber,
+                        CountPaidBaggage = bp.CountPaidBaggages,
+                        RegisteredBaggageCount = bp.Registration == null ? 0 : bp.Registration.Baggages.Count()
                     }))
                 .OrderBy(b => b.DepartureTime)
                 .ToListAsync();
@@ -555,6 +557,60 @@ namespace AirportPassengerCheckIn.Controllers
             TempData["SearchPassport"] = bookingPassenger.Passenger.PassportNumber;
 
             return RedirectToAction(nameof(BookingSearch));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ManageBaggage(int bookingPassengerId)
+        {
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Passenger)
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                    .ThenInclude(r => r!.Baggages)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+            if (bookingPassenger == null)
+            {
+                return NotFound();
+            }
+
+            var booking = bookingPassenger.Booking;
+            var passenger = bookingPassenger.Passenger;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                flight.DepartureTime <= now || flight.DepartureTime > now.AddHours(24) ||
+                registration == null ||
+                registration.Status != RegistrationStatus.Finished)
+            {
+                TempData["ErrorMessage"] = "Baggage registration is not available";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            var model = new BaggageViewModel
+            {
+                BookingPassengerId = bookingPassenger.Id,
+                PassengerName = bookingPassenger.Passenger.LastName + " " +
+                    bookingPassenger.Passenger.FirstName + " " +
+                    (bookingPassenger.Passenger.MiddleName ?? ""),
+                BookingNumber = booking.BookingNumber,
+                FlightNumber = flight.FlightNumber,
+                CountPaidBaggage = bookingPassenger.CountPaidBaggages,
+                MaxBaggageWeight = flight.MaxBaggageWeight,
+                Baggages = registration.Baggages
+                    .Select(b => new BaggageItemViewModel
+                    {
+                        Id = b.Id,
+                        Weight = b.Weight,
+                        IsOversized = b.IsOversized
+                    })
+                    .ToList()
+            };
+            return View(model);
         }
     }
 }

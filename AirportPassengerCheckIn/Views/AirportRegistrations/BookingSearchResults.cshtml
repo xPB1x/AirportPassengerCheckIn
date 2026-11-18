@@ -142,6 +142,15 @@
                             Продолжить регистрацию
                         </a>
                     }
+                    @if (booking.RegistrationStatus == "Finished" &&
+                        booking.CountPaidBaggage > booking.RegisteredBaggageCount)
+                    {
+                        <a asp-action="ManageBaggage"
+                           asp-route-id="@booking.BookingPassengerId"
+                           class="btn btn-success">
+                            Оформить багаж
+                        </a>
+                    }
                 </div>
             </div>
         }
