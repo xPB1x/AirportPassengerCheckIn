@@ -21,7 +21,7 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public IActionResult Index()
         {
             return View();
         }

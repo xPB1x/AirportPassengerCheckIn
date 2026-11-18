@@ -1,8 +1,79 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Главная";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h1>Система регистрации пассажиров</h1>
+        <p class="text-muted">Добро пожаловать в систему управления авиаперевозками</p>
+    </div>
+
+    @if (User.IsInRole("Passenger"))
+    {
+        <div class="card" style="max-width: 600px;">
+            <div class="card-body">
+                <h4 class="card-title">Пассажир</h4>
+                <p class="card-text">Просмотр ваших бронирований и регистрация на рейсы.</p>
+                <a asp-controller="Registrations"
+                   asp-action="OnlineBookings"
+                   class="btn btn-primary">
+                    Показать все бронирования
+                </a>
+            </div>
+        </div>
+    }
+    else if (User.IsInRole("AirportEmployee"))
+    {
+        <div class="card" style="max-width: 600px;">
+            <div class="card-body">
+                <h4 class="card-title">Сотрудник аэропорта</h4>
+                <p class="card-text">Поиск пассажиров и выполнение регистрации на рейсы.</p>
+                <a asp-controller="AirportRegistrations"
+                   asp-action="BookingSearch"
+                   class="btn btn-primary">
+                    Начать регистрацию
+                </a>
+            </div>
+        </div>
+    }
+    else if (User.IsInRole("Admin"))
+    {
+        <h3 class="text-center mb-4">Панель администратора</h3>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <a asp-controller="Users" asp-action="Index"
+                   class="btn btn-outline-primary w-100 p-3">
+                    Управление пользователями
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a asp-controller="Employees" asp-action="Index"
+                   class="btn btn-outline-primary w-100 p-3">
+                    Добавить сотрудника аэропорта
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a asp-controller="Flights" asp-action="Index"
+                   class="btn btn-outline-primary w-100 p-3">
+                    Управление рейсами
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a asp-controller="AircraftTypes" asp-action="Index"
+                   class="btn btn-outline-primary w-100 p-3">
+                    Типы самолётов
+                </a>
+            </div>
+        </div>
+    }
+    else if (!User.Identity?.IsAuthenticated ?? true)
+    {
+        <div class="text-center">
+            <p>Для продолжения работы войдите в систему.</p>
+        </div>
+    }
 </div>

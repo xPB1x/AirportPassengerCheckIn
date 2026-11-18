@@ -560,7 +560,7 @@ namespace AirportPassengerCheckIn.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ManageBaggage(int bookingPassengerId)
+        public async Task<IActionResult> ManageBaggage(int id)
         {
             var now = DateTime.UtcNow;
 
@@ -570,7 +570,7 @@ namespace AirportPassengerCheckIn.Controllers
                     .ThenInclude(b => b.Flight)
                 .Include(bp => bp.Registration)
                     .ThenInclude(r => r!.Baggages)
-                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+                .FirstOrDefaultAsync(bp => bp.Id == id);
 
             if (bookingPassenger == null)
             {
@@ -610,7 +610,71 @@ namespace AirportPassengerCheckIn.Controllers
                     })
                     .ToList()
             };
+            TempData["SearchPassport"] = bookingPassenger.Passenger.PassportNumber;
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddBaggage(BaggageViewModel model)
+        {
+            var now = DateTime.UtcNow;
+
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                    .ThenInclude(r => r!.Baggages)
+                .FirstOrDefaultAsync(bp => bp.Id == model.BookingPassengerId);
+
+            if (bookingPassenger == null)
+                return NotFound();
+
+            var booking = bookingPassenger.Booking;
+            var registration = bookingPassenger.Registration;
+            var flight = booking.Flight;
+
+            if (booking.Status != BookingStatus.Confirmed ||
+                registration == null ||
+                registration.Status != RegistrationStatus.Finished ||
+                flight.DepartureTime <= now)
+            {
+                TempData["ErrorMessage"] = "Baggage registration is unavailable.";
+                return RedirectToAction(nameof(BookingSearch));
+            }
+
+            if (bookingPassenger.CountPaidBaggages <= registration.Baggages.Count)
+            {
+                TempData["ErrorMessage"] = "All paid baggage places have already been registered.";
+                return RedirectToAction(nameof(ManageBaggage),
+                    new { id = bookingPassenger.Id });
+            }
+
+            if (model.Weight <= 0 ||
+                model.Weight > flight.MaxBaggageWeight)
+            {
+                TempData["ErrorMessage"] =
+                    $"Baggage weight must be greater than 0 and not exceed {flight.MaxBaggageWeight} kg.";
+
+                return RedirectToAction(nameof(ManageBaggage),
+                    new { id = bookingPassenger.Id });
+            }
+
+            var baggage = new Baggage
+            {
+                Weight = model.Weight,
+                IsOversized = model.IsOversized,
+                RegistrationId = registration.Id
+            };
+
+            _context.Baggages.Add(baggage);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Baggage has been registered successfully.";
+
+            return RedirectToAction(nameof(ManageBaggage),
+                new { id = bookingPassenger.Id });
         }
     }
 }

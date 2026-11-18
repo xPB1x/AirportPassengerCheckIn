@@ -5,6 +5,19 @@
 }
 
 <div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success mt-3">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mt-3">
+            @TempData["ErrorMessage"]
+        </div>
+    }
     <h2>Оформление багажа</h2>
 
     <div class="card mt-3">
@@ -19,6 +32,50 @@
             <p><strong>Осталось оформить:</strong> @Model.RemainingBaggageCount</p>
         </div>
     </div>
+    @if (Model.RemainingBaggageCount > 0)
+    {
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5>Добавить место багажа</h5>
+
+                <form asp-action="AddBaggage" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="BookingPassengerId"
+                           value="@Model.BookingPassengerId" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Вес багажа (кг)</label>
+
+                        <input type="number"
+                               name="Weight"
+                               class="form-control"
+                               min="0.01"
+                               max="@Model.MaxBaggageWeight"
+                               step="0.01"
+                               required />
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox"
+                               name="IsOversized"
+                               value="true"
+                               class="form-check-input"
+                               id="isOversized" />
+
+                        <label class="form-check-label" for="isOversized">
+                            Негабаритный багаж
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        Добавить багаж
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
 
     <div class="card mt-3">
         <div class="card-body">
@@ -49,5 +106,12 @@
                 </table>
             }
         </div>
+    </div>
+    <br />
+    <div class="d-flex gap-2">
+        <a asp-action="BookingSearch"
+           class="btn btn-secondary">
+            Назад
+        </a>
     </div>
 </div>
