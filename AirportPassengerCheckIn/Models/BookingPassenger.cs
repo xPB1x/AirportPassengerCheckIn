@@ -9,5 +9,6 @@
         public int PassengerId { get; set; }
         public Passenger Passenger { get; set; } = null!;
         public Registration? Registration { get; set; }
+        public int CountPaidBaggages { get; set; } = 0;
     }
 }

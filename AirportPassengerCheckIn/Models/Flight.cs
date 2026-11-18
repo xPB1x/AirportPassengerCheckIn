@@ -13,5 +13,7 @@
         public int AircraftId { get; set; }
         public Aircraft Aircraft { get; set; } = null!;
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
+        public decimal MaxBaggageWeight { get; set; }
     }
 }
