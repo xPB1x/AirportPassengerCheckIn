@@ -227,6 +227,9 @@ namespace AirportPassengerCheckIn.Migrations
                     b.Property<int>("PassengerId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("SeatClass")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PassengerId");

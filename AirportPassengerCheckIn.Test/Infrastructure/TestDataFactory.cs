@@ -80,11 +80,12 @@ namespace AirportPassengerCheckIn.Test.Infrastructure
                 Flight = flight
             };
 
-    
+
             var bookingPassenger = new BookingPassenger
             {
                 Booking = booking,
-                Passenger = passenger
+                Passenger = passenger,
+                SeatClass = SeatClass.Economy
             };
 
             context.BookingPassengers.Add(bookingPassenger);
