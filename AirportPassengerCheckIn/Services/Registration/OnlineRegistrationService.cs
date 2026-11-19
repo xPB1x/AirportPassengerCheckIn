@@ -44,7 +44,7 @@ namespace AirportPassengerCheckIn.Services.Registration
             }
 
            
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime)) 
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime)) 
             {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
@@ -91,7 +91,7 @@ namespace AirportPassengerCheckIn.Services.Registration
             }
 
             var now = _timeProvider.GetUtcNow().UtcDateTime;
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
@@ -142,7 +142,7 @@ namespace AirportPassengerCheckIn.Services.Registration
                     OnlineRegistrationError.BookingNotConfirmed);
             }
 
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
@@ -202,7 +202,7 @@ namespace AirportPassengerCheckIn.Services.Registration
             }
 
 
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
                 return AvailableSeatsResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
 
@@ -271,7 +271,7 @@ namespace AirportPassengerCheckIn.Services.Registration
 
             var flight = booking.Flight;
 
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
@@ -346,7 +346,7 @@ namespace AirportPassengerCheckIn.Services.Registration
             var now = _timeProvider.GetUtcNow().UtcDateTime;
             var flight = bookingPassenger.Booking.Flight;
 
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);

@@ -67,7 +67,7 @@ namespace AirportPassengerCheckIn.Test.Infrastructure
                 FirstName = "Ivan",
                 LastName = "Smirnov",
                 MiddleName = "Alekseevich",
-                BirthDate = new DateOnly(2006, 17, 8),
+                BirthDate = new DateOnly(2006, 8, 17),
                 PassportNumber = "TEST123456"
             };
 
