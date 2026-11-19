@@ -150,7 +150,7 @@ namespace AirportPassengerCheckIn.Services.Registration
 
             var registration = bookingPassenger.Registration;
 
-            if (registration == null)
+            if (registration == null || registration.Status != RegistrationStatus.Active)
             {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationNotActive);
@@ -162,11 +162,6 @@ namespace AirportPassengerCheckIn.Services.Registration
                     OnlineRegistrationError.InvalidRegistrationType);
             }
 
-            if (registration.Status != RegistrationStatus.Active)
-            {
-                return ContinueOnlineRegistrationResult.Failure(
-                    OnlineRegistrationError.RegistrationNotActive);
-            }
 
             var nextStep = registration.SeatId == null
                 ? OnlineRegistrationStep.SelectSeat
