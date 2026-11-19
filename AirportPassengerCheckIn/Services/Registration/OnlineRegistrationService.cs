@@ -32,19 +32,23 @@ namespace AirportPassengerCheckIn.Services.Registration
                     bp.Booking.UserId == userId);
 
             if (bookingPassenger == null)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.NotFound);
+            }
 
             if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.BookingNotConfirmed);
+            }
 
-            var now = _timeProvider.GetUtcNow().UtcDateTime;
-            var departureTime = bookingPassenger.Booking.Flight.DepartureTime;
-
-            if (departureTime <= now || departureTime > now.AddHours(24))
+           
+            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime)) 
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
+            }
 
             if (bookingPassenger.Registration != null)
             {
@@ -75,23 +79,29 @@ namespace AirportPassengerCheckIn.Services.Registration
                     bp.Booking.UserId == userId);
 
             if (bookingPassenger == null)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.NotFound);
+            }
 
             if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.BookingNotConfirmed);
+            }
 
             var now = _timeProvider.GetUtcNow().UtcDateTime;
-            var departureTime = bookingPassenger.Booking.Flight.DepartureTime;
-
-            if (now >= departureTime || departureTime > now.AddHours(24))
+            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
+            }
 
             if (bookingPassenger.Registration != null)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationAlreadyExists);
+            }
 
             var registration = new Models.Registration
             {
@@ -121,33 +131,42 @@ namespace AirportPassengerCheckIn.Services.Registration
                     bp.Booking.UserId == userId);
 
             if (bookingPassenger == null)
+            {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.NotFound);
+            }
 
             if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.BookingNotConfirmed);
+            }
 
-            var now = _timeProvider.GetUtcNow().UtcDateTime;
-            var departureTime = bookingPassenger.Booking.Flight.DepartureTime;
-
-            if (now >= departureTime || departureTime > now.AddHours(24))
+            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
+            }
 
             var registration = bookingPassenger.Registration;
 
             if (registration == null)
+            {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationNotActive);
+            }
 
             if (registration.Type != RegistrationType.Online)
+            {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.InvalidRegistrationType);
+            }
 
             if (registration.Status != RegistrationStatus.Active)
+            {
                 return ContinueOnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationNotActive);
+            }
 
             var nextStep = registration.SeatId == null
                 ? OnlineRegistrationStep.SelectSeat
@@ -171,17 +190,19 @@ namespace AirportPassengerCheckIn.Services.Registration
                     bp.Booking.UserId == userId);
 
             if (bookingPassenger == null)
+            {
                 return AvailableSeatsResult.Failure(
                     OnlineRegistrationError.NotFound);
+            }
 
             if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
                 return AvailableSeatsResult.Failure(
                     OnlineRegistrationError.BookingNotConfirmed);
+            }
 
-            var now = _timeProvider.GetUtcNow().UtcDateTime;
-            var departureTime = bookingPassenger.Booking.Flight.DepartureTime;
 
-            if (now >= departureTime || departureTime > now.AddHours(24))
+            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
                 return AvailableSeatsResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
 
@@ -195,8 +216,10 @@ namespace AirportPassengerCheckIn.Services.Registration
             }
 
             if (registration.Type != RegistrationType.Online)
+            {
                 return AvailableSeatsResult.Failure(
                     OnlineRegistrationError.InvalidRegistrationType);
+            }
 
             var flightId = bookingPassenger.Booking.FlightId;
 
@@ -234,29 +257,31 @@ namespace AirportPassengerCheckIn.Services.Registration
 
             if (bookingPassenger == null)
             {
-                return OnlineRegistrationResult.Failure(OnlineRegistrationError.NotFound);
+                return OnlineRegistrationResult.Failure(
+                    OnlineRegistrationError.NotFound);
             }
 
             var booking = bookingPassenger.Booking;
 
             if (booking.Status != BookingStatus.Confirmed)
             {
-                return OnlineRegistrationResult.Failure(OnlineRegistrationError.BookingNotConfirmed);
+                return OnlineRegistrationResult.Failure(
+                    OnlineRegistrationError.BookingNotConfirmed);
             }
 
             var flight = booking.Flight;
-            var now = _timeProvider.GetUtcNow().UtcDateTime;
 
-
-            if (flight.DepartureTime <= now || flight.DepartureTime > now.AddHours(24))
+            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
-                return OnlineRegistrationResult.Failure(OnlineRegistrationError.RegistrationWindowClosed);
+                return OnlineRegistrationResult.Failure(
+                    OnlineRegistrationError.RegistrationWindowClosed);
             }
 
             var registration = bookingPassenger.Registration;
             if (registration == null || registration.Status != RegistrationStatus.Active)
             {
-                return OnlineRegistrationResult.Failure(OnlineRegistrationError.RegistrationNotActive);
+                return OnlineRegistrationResult.Failure(
+                    OnlineRegistrationError.RegistrationNotActive);
             }
 
             if (registration.Type != RegistrationType.Online)
@@ -307,18 +332,21 @@ namespace AirportPassengerCheckIn.Services.Registration
                     bp.Booking.UserId == userId);
 
             if (bookingPassenger == null)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.NotFound);
+            }
 
             if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.BookingNotConfirmed);
+            }
 
             var now = _timeProvider.GetUtcNow().UtcDateTime;
             var flight = bookingPassenger.Booking.Flight;
 
-            if (now >= flight.DepartureTime ||
-                flight.DepartureTime > now.AddHours(24))
+            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.RegistrationWindowClosed);
@@ -334,12 +362,16 @@ namespace AirportPassengerCheckIn.Services.Registration
             }
 
             if (registration.Type != RegistrationType.Online)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.InvalidRegistrationType);
+            }
 
             if (registration.SeatId == null)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.SeatNotSelected);
+            }
 
             if (registration.Seat == null ||
                 registration.Seat.AircraftId != flight.AircraftId)
@@ -356,14 +388,26 @@ namespace AirportPassengerCheckIn.Services.Registration
                  r.Status == RegistrationStatus.Finished));
 
             if (isOccupied)
+            {
                 return OnlineRegistrationResult.Failure(
                     OnlineRegistrationError.SeatOccupied);
+            }
 
             registration.Status = RegistrationStatus.Finished;
 
             await _context.SaveChangesAsync();
 
             return OnlineRegistrationResult.Success();
+        }
+
+        private bool IsRegistrationWindowOpen(DateTime departureTime)
+        {
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+            if (departureTime <= now || departureTime > now.AddHours(24))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
