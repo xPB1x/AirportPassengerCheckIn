@@ -3,7 +3,7 @@
     public class OnlineRegistrationResult
     {
         public OnlineRegistrationError Error { get; set; }
-        public bool Succede => Error == OnlineRegistrationError.None;
+        public bool Succeeded => Error == OnlineRegistrationError.None;
 
         public static OnlineRegistrationResult Success()
         {

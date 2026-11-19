@@ -5,6 +5,7 @@ using AirportPassengerCheckIn.Models.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using AirportPassengerCheckIn.Services.Registration.Interfaces;
+using AirportPassengerCheckIn.Services.Registration;
 
 namespace AirportPassengerCheckIn
 {
@@ -32,7 +33,7 @@ namespace AirportPassengerCheckIn
 
             builder.Services.AddScoped<BookingNumberGenerator>();
             builder.Services.AddScoped<BookingService>();
-            builder.Services.AddScoped<IOnlineRegistrationService, IOnlineRegistrationService>();
+            builder.Services.AddScoped<IOnlineRegistrationService, OnlineRegistrationService>();
 
             var app = builder.Build();
 
