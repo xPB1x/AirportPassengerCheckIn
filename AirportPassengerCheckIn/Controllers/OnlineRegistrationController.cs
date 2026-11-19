@@ -14,11 +14,11 @@ using System.Diagnostics;
 namespace AirportPassengerCheckIn.Controllers
 {
     [Authorize(Roles = "Passenger")]
-    public class RegistrationsController : Controller
+    public class OnlineRegistrationController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public RegistrationsController(ApplicationDbContext context)
+        public OnlineRegistrationController(ApplicationDbContext context)
         {
             _context = context;
         }

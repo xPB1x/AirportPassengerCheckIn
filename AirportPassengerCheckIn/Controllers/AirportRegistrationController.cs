@@ -10,10 +10,10 @@ using System.Security.Claims;
 namespace AirportPassengerCheckIn.Controllers
 {
     [Authorize(Roles = ("Admin,AirportEmployee"))]
-    public class AirportRegistrationsController : Controller
+    public class AirportRegistrationController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public AirportRegistrationsController (ApplicationDbContext context)
+        public AirportRegistrationController (ApplicationDbContext context)
         {
             _context = context;
         }
