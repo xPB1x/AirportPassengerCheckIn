@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AirportPassengerCheckIn.Test")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c045eaabef8962a677bdd290dcdb8172c47a59d7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d0d78c42eb58e8be784fcda4295eb0111c2d65ac")]
 [assembly: System.Reflection.AssemblyProductAttribute("AirportPassengerCheckIn.Test")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AirportPassengerCheckIn.Test")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
