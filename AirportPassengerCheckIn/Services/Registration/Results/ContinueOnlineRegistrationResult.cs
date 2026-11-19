@@ -2,7 +2,7 @@
 {
     namespace AirportPassengerCheckIn.Services.Results
     {
-        public class OnlineRegistrationContinuationResult
+        public class ContinueOnlineRegistrationResult
         {
             public OnlineRegistrationError Error { get; set; }
 
@@ -10,20 +10,20 @@
 
             public bool Succeeded => Error == OnlineRegistrationError.None;
 
-            public static OnlineRegistrationContinuationResult Success(
+            public static ContinueOnlineRegistrationResult Success(
                 OnlineRegistrationStep nextStep)
             {
-                return new OnlineRegistrationContinuationResult
+                return new ContinueOnlineRegistrationResult
                 {
                     Error = OnlineRegistrationError.None,
                     NextStep = nextStep
                 };
             }
 
-            public static OnlineRegistrationContinuationResult Failure(
+            public static ContinueOnlineRegistrationResult Failure(
                 OnlineRegistrationError error)
             {
-                return new OnlineRegistrationContinuationResult
+                return new ContinueOnlineRegistrationResult
                 {
                     Error = error,
                     NextStep = null

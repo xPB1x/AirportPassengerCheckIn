@@ -1,4 +1,5 @@
 ﻿using AirportPassengerCheckIn.Services.Registration.Results;
+using AirportPassengerCheckIn.Services.Registration.Results.AirportPassengerCheckIn.Services.Results;
 
 namespace AirportPassengerCheckIn.Services.Registration.Interfaces
 {
@@ -10,10 +11,10 @@ namespace AirportPassengerCheckIn.Services.Registration.Interfaces
         Task<OnlineRegistrationResult> StartRegistrationAsync(
             string userId, int bookingPassengerId);
 
-        Task<OnlineRegistrationResult> GetContinueStepOnline(
+        Task<ContinueOnlineRegistrationResult> GetContinueStepOnlineAsync(
             string userId, int bookingPassengerId);
 
-        Task<OnlineRegistrationResult> GetAvailableSeatsAsync(
+        Task<AvailableSeatsResult> GetAvailableSeatsAsync(
             string userId, int bookingPassengerId);
 
         Task<OnlineRegistrationResult> SelectSeatAsync(

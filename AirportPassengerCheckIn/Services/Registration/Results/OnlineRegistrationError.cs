@@ -7,7 +7,7 @@
         BookingNotConfirmed,
         RegistrationWindowClosed,
 
-        RegistrationAlreadyExist,
+        RegistrationAlreadyExists,
         RegistrationAlreadyActive,
         RegistrationNotActive,
         InvalidRegistrationType,
