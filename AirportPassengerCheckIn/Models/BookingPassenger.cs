@@ -1,4 +1,6 @@
-﻿namespace AirportPassengerCheckIn.Models
+﻿using AirportPassengerCheckIn.Models.Enums;
+
+namespace AirportPassengerCheckIn.Models
 {
     public class BookingPassenger
     {
@@ -10,5 +12,6 @@
         public Passenger Passenger { get; set; } = null!;
         public Registration? Registration { get; set; }
         public int CountPaidBaggages { get; set; } = 0;
+        public SeatClass SeatClass { get; set; }
     }
 }

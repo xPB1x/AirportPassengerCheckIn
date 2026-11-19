@@ -16,5 +16,6 @@
         SeatBelongsToAnotherAircraft,
         SeatOccupied,
         SeatNotSelected,
+        DifferentSeatClasses,
     }
 }

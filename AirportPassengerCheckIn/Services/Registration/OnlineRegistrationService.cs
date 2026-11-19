@@ -297,6 +297,11 @@ namespace AirportPassengerCheckIn.Services.Registration
                 return OnlineRegistrationResult.Failure(OnlineRegistrationError.SeatBelongsToAnotherAircraft);
             }
 
+            if (seat.Class != bookingPassenger.SeatClass)
+            {
+                return OnlineRegistrationResult.Failure(OnlineRegistrationError.DifferentSeatClasses);
+            }
+
             var isOccupied = await _context.Registrations.AnyAsync(r =>
                 r.SeatId == selectedSeatId &&
                 r.BookingPassenger.Booking.FlightId == flight.Id &&
