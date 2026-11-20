@@ -303,11 +303,87 @@ namespace AirportPassengerCheckIn.Services.Registration
             return RegistrationResult.Success();
         }
 
-        //public async Task<RegistrationResult> FinishRegistrationAsync(
-        //    int bookingPassengerId)
-        //{
+        public async Task<RegistrationResult> FinishRegistrationAsync(
+            int bookingPassengerId)
+        {
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                    .ThenInclude(r => r!.Seat)
+                .Include(bp => bp.Passenger)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
 
-        //}
+            if (bookingPassenger == null)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.NotFound);
+            }
+
+            if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.BookingNotConfirmed);
+            }
+
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+            var flight = bookingPassenger.Booking.Flight;
+
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.RegistrationWindowClosed);
+            }
+
+            var registration = bookingPassenger.Registration;
+
+            if (registration == null ||
+                registration.Status != RegistrationStatus.Active)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.RegistrationNotActive);
+            }
+
+            if (registration.Type != RegistrationType.Online)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.InvalidRegistrationType);
+            }
+
+            if (registration.SeatId == null)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.SeatNotSelected);
+            }
+
+            if (registration.Seat == null ||
+                registration.Seat.AircraftId != flight.AircraftId)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.SeatBelongsToAnotherAircraft);
+            }
+
+            var isOccupied = await _context.Registrations.AnyAsync(r =>
+                r.SeatId == registration.SeatId &&
+                r.BookingPassenger.Booking.FlightId == flight.Id &&
+                r.BookingPassengerId != bookingPassengerId &&
+                (r.Status == RegistrationStatus.Active ||
+                 r.Status == RegistrationStatus.Finished));
+
+            if (isOccupied)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.SeatOccupied);
+            }
+
+            registration.Status = RegistrationStatus.Finished;
+
+            await _context.SaveChangesAsync();
+
+            return RegistrationResult.Success();
+        }
+
+
         //public async Task<RegistrationResult> AddBaggage(
         //    int bookingPassengerId)
         //{
