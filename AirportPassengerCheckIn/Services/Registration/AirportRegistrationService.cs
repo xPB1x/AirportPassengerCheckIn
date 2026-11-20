@@ -1,5 +1,8 @@
 ﻿using AirportPassengerCheckIn.Data;
+using AirportPassengerCheckIn.DTOs.ViewModels.Registrations;
+using AirportPassengerCheckIn.Models;
 using AirportPassengerCheckIn.Models.Enums;
+using AirportPassengerCheckIn.Services.Registration.Interfaces;
 using AirportPassengerCheckIn.Services.Registration.Results;
 using AirportPassengerCheckIn.Services.Registration.Results.AirportPassengerCheckIn.Services.Results;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +10,7 @@ using System.Security.Claims;
 
 namespace AirportPassengerCheckIn.Services.Registration
 {
-    public class AirportRegistrationService
+    public class AirportRegistrationService : IAirportRegistrationService
     {
         private readonly ApplicationDbContext _context;
         private readonly TimeProvider _timeProvider;
@@ -384,11 +387,76 @@ namespace AirportPassengerCheckIn.Services.Registration
         }
 
 
-        //public async Task<RegistrationResult> AddBaggage(
-        //    int bookingPassengerId)
-        //{
+        public async Task<RegistrationResult> AddBaggage(
+            int bookingPassengerId, BaggageViewModel model)
+        {
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                    .ThenInclude(r => r!.Baggages)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
 
-        //}
+            if (bookingPassenger == null)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.NotFound);
+            }
+
+            if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.BookingNotConfirmed);
+            }
+
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+            var booking = bookingPassenger.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (!IsRegistrationWindowOpen(flight.DepartureTime))
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.RegistrationWindowClosed);
+            }
+
+            if (registration == null)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.RegistrationNotExists);
+            }
+            if (registration.Status != RegistrationStatus.Finished)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.InvalidRegistrationType);
+            }
+
+            if (bookingPassenger.CountPaidBaggages <= registration.Baggages.Count)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.InvalidPaidBaggagesCount);
+            }
+
+            if (model.Weight <= 0 ||
+                model.Weight > flight.MaxBaggageWeight)
+            {
+                return RegistrationResult.Failure(
+                    RegistrationError.InvalifBaggageWeight);
+            }
+
+            var baggage = new Baggage
+            {
+                Weight = model.Weight,
+                IsOversized = model.IsOversized,
+                RegistrationId = registration.Id
+            };
+
+            _context.Baggages.Add(baggage);
+
+            await _context.SaveChangesAsync();
+            return RegistrationResult.Success();
+        }
+
         private bool IsRegistrationWindowOpen(DateTime departureTime)
         {
             var now = _timeProvider.GetUtcNow().UtcDateTime;

@@ -8,6 +8,7 @@
         RegistrationWindowClosed,
 
         RegistrationAlreadyExists,
+        RegistrationNotExists,
         RegistrationAlreadyActive,
         RegistrationNotActive,
         InvalidRegistrationType,
@@ -17,5 +18,8 @@
         SeatOccupied,
         SeatNotSelected,
         DifferentSeatClasses,
+
+        InvalidPaidBaggagesCount,
+        InvalifBaggageWeight,
     }
 }

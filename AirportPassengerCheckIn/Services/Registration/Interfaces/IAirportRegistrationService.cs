@@ -1,4 +1,5 @@
-﻿using AirportPassengerCheckIn.Services.Registration.Results;
+﻿using AirportPassengerCheckIn.DTOs.ViewModels.Registrations;
+using AirportPassengerCheckIn.Services.Registration.Results;
 using AirportPassengerCheckIn.Services.Registration.Results.AirportPassengerCheckIn.Services.Results;
 
 namespace AirportPassengerCheckIn.Services.Registration.Interfaces
@@ -6,9 +7,9 @@ namespace AirportPassengerCheckIn.Services.Registration.Interfaces
     public interface IAirportRegistrationService
     {
         Task<RegistrationResult> StartRegistrationAsync(
-            int bookingPassengerId);
+            string userId, int bookingPassengerId);
         Task<ContinueOnlineRegistrationResult> GetContinueStepAsync(
-            int bookingPassengerId);
+            string userId, int bookingPassengerId);
         Task<AvailableSeatsResult> GetAvailableSeatsAsync(
             int bookingPassengerId);
         Task<RegistrationResult> SelectSeatAsync(
@@ -16,6 +17,6 @@ namespace AirportPassengerCheckIn.Services.Registration.Interfaces
         Task<RegistrationResult> FinishRegistrationAsync(
             int bookingPassengerId);
         Task<RegistrationResult> AddBaggage(
-            int bookingPassengerId);
+            int bookingPassengerId, BaggageViewModel model);
     }
 }
