@@ -3,6 +3,7 @@ using AirportPassengerCheckIn.Models.Enums;
 using AirportPassengerCheckIn.Services.Registration.Results;
 using AirportPassengerCheckIn.Services.Registration.Results.AirportPassengerCheckIn.Services.Results;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AirportPassengerCheckIn.Services.Registration
 {
@@ -40,7 +41,7 @@ namespace AirportPassengerCheckIn.Services.Registration
             }
 
             var now = _timeProvider.GetUtcNow().UtcDateTime;
-            if (IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
             {
                 return RegistrationResult.Failure(
                     RegistrationError.RegistrationWindowClosed);
@@ -73,11 +74,82 @@ namespace AirportPassengerCheckIn.Services.Registration
             return RegistrationResult.Success();
         }
 
-        //public async Task<ContinueOnlineRegistrationResult> GetContinueStepAsync(
-        //    int bookingPassengerId)
-        //{
+        public async Task<ContinueOnlineRegistrationResult> GetContinueStepAsync(
+            string userId, int bookingPassengerId)
+        {
+            var bookingPassenger = await _context.BookingPassengers
+                .Include(bp => bp.Booking)
+                    .ThenInclude(b => b.Flight)
+                .Include(bp => bp.Registration)
+                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
 
-        //}
+            if (bookingPassenger == null)
+            {
+                return ContinueOnlineRegistrationResult.Failure(
+                    RegistrationError.NotFound);
+            }
+
+            var booking = bookingPassenger!.Booking;
+            var flight = booking.Flight;
+            var registration = bookingPassenger.Registration;
+
+            if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            {
+                return ContinueOnlineRegistrationResult.Failure(
+                    RegistrationError.BookingNotConfirmed);
+            }
+
+            var now = _timeProvider.GetUtcNow().UtcDateTime;
+            if (!IsRegistrationWindowOpen(bookingPassenger.Booking.Flight.DepartureTime))
+            {
+                return ContinueOnlineRegistrationResult.Failure(
+                    RegistrationError.RegistrationWindowClosed);
+            }
+
+            if (registration == null || registration.Status != RegistrationStatus.Active)
+            {
+                return ContinueOnlineRegistrationResult.Failure(
+                    RegistrationError.RegistrationNotActive);
+            }
+            
+            if (registration.Type == RegistrationType.Online)
+            {
+                var airportEmployeeId = await _context.Users
+                    .Where(u => u.Id == userId)
+                    .Select(u => u.AirportEmployeeId)
+                    .FirstOrDefaultAsync();
+
+                _context.Registrations.Remove(registration);
+
+                registration = new Models.Registration
+                {
+                    RegistrationTime = now,
+                    Type = RegistrationType.Airport,
+                    Status = RegistrationStatus.Active,
+                    BookingPassengerId = bookingPassenger.Id,
+                    AirportEmployeeId = airportEmployeeId
+                };
+
+                _context.Registrations.Add(registration);
+
+                await _context.SaveChangesAsync();
+            }
+
+            else if (registration.Type != RegistrationType.Airport)
+            {
+                return ContinueOnlineRegistrationResult.Failure(
+                    RegistrationError.InvalidRegistrationType);
+            }
+
+            if (registration.SeatId == null)
+            {
+                return ContinueOnlineRegistrationResult.Success(
+                    RegistrationStep.SelectSeat);
+            }
+
+            return ContinueOnlineRegistrationResult.Success(
+                    RegistrationStep.Confirm);
+        }
 
         //public async Task<AvailableSeatsResult> GetAvailableSeatsAsync(
         //    int bookingPassengerId)
