@@ -2,6 +2,8 @@
 using AirportPassengerCheckIn.DTOs.ViewModels.Registrations;
 using AirportPassengerCheckIn.Models;
 using AirportPassengerCheckIn.Models.Enums;
+using AirportPassengerCheckIn.Services.Registration.Interfaces;
+using AirportPassengerCheckIn.Services.Registration.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,9 +15,13 @@ namespace AirportPassengerCheckIn.Controllers
     public class AirportRegistrationController : Controller
     {
         private readonly ApplicationDbContext _context;
-        public AirportRegistrationController (ApplicationDbContext context)
+        private readonly IAirportRegistrationService _registrationService;
+        public AirportRegistrationController (
+            ApplicationDbContext context,
+            IAirportRegistrationService registrationService)
         {
             _context = context;
+            _registrationService = registrationService;
         }
 
         [HttpGet]
@@ -126,142 +132,84 @@ namespace AirportPassengerCheckIn.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> StartRegistration(int bookingPassengerId)
         {
-            var now = DateTime.UtcNow;
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _registrationService.StartRegistrationAsync(
+                userId!, bookingPassengerId);
 
-            var bookingPassenger = await _context.BookingPassengers
-                .Include(bp => bp.Booking)
-                    .ThenInclude(b => b.Flight)
-                .Include(bp => bp.Registration)
-                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
-
-            if (bookingPassenger == null)
+            if (result.Error == RegistrationError.NotFound)
             {
                 return NotFound();
             }
 
-            if (bookingPassenger.Booking.Status != BookingStatus.Confirmed)
+            if (result.Error == RegistrationError.RegistrationAlreadyActive)
+                return RedirectToAction(nameof(ContinueAirport), new { bookingPassengerId });
+
+            if (!result.Succeeded)
             {
-                TempData["ErrorMessage"] = "The booking is not confirmed";
+                var bookingPassenger = await _context.BookingPassengers
+                    .Include(bp => bp.Passenger)
+                    .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+                TempData["ErrorMessage"] = result.Error.ToString();
+                TempData["SearchPassport"] = bookingPassenger!.Passenger.PassportNumber;
                 return RedirectToAction(nameof(BookingSearch));
             }
 
-            var departureTime = bookingPassenger.Booking.Flight.DepartureTime;
-            if (departureTime <= now || departureTime > now.AddHours(24))
-            {
-                TempData["ErrorMessage"] = "Registration is only available 24 hours before departure.";
-                return RedirectToAction(nameof(BookingSearch));
-            }
 
-            if (bookingPassenger.Registration != null)
-            {
-                TempData["ErrorMessage"] = "Registraion is already exists";
-                return RedirectToAction(nameof(BookingSearch));
-            }
-
-            var airportEmployeeId = await _context.Users
-                .Where(u => u.Id == userId)
-                .Select(u => u.AirportEmployeeId)
-                .FirstOrDefaultAsync();
-
-            if (User.IsInRole("AirportEmployee") && airportEmployeeId == null)
-                return Forbid();
-
-            var registration = new Registration
-            {
-                RegistrationTime = now,
-                Type = RegistrationType.Airport,
-                Status = RegistrationStatus.Active,
-                BookingPassengerId = bookingPassenger.Id,
-                AirportEmployeeId = airportEmployeeId
-            };
-
-            _context.Registrations.Add(registration);
-
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Registation has started succesfully";
-
-            return RedirectToAction(nameof(SelectSeat), new {id = bookingPassenger.Id});
+            return RedirectToAction(nameof(SelectSeat), new {id = bookingPassengerId});
         }
 
         [HttpGet]
         public async Task<IActionResult> ContinueAirport(int id)
         {
-            var now = DateTime.UtcNow;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var bookingPassenger = await _context.BookingPassengers
-                .Include(bp => bp.Booking)
-                    .ThenInclude(b => b.Flight)
-                .Include(bp => bp.Registration)
-                .FirstOrDefaultAsync(bp => bp.Id == id);
+            var result = await _registrationService.GetContinueStepAsync(userId!, id);
 
-            if (bookingPassenger == null)
+            if (result.Error == RegistrationError.NotFound)
+            {
                 return NotFound();
-
-            var booking = bookingPassenger.Booking;
-            var flight = booking.Flight;
-            var registration = bookingPassenger.Registration;
-
-            if (booking.Status != BookingStatus.Confirmed ||
-                registration == null ||
-                registration.Status != RegistrationStatus.Active ||
-                flight.DepartureTime <= now ||
-                flight.DepartureTime > now.AddHours(24))
+            }
+            if (!result.Succeeded)
             {
-                TempData["Error"] = "You can't continue registration";
+                var bookingPassenger = await _context.BookingPassengers
+                    .Include(bp => bp.Passenger)
+                    .FirstOrDefaultAsync(bp => bp.Id == id);
+
+                TempData["ErrorMessage"] = result.Error.ToString();
+                TempData["SearchPassport"] = bookingPassenger!.Passenger.PassportNumber;
                 return RedirectToAction(nameof(BookingSearch));
             }
 
-            if (registration.Type == RegistrationType.Online)
+            if (result.NextStep == RegistrationStep.SelectSeat)
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                var airportEmployeeId = await _context.Users
-                    .Where(u => u.Id == userId)
-                    .Select(u => u.AirportEmployeeId)
-                    .FirstOrDefaultAsync();
-
-                if (User.IsInRole("AirportEmployee") && airportEmployeeId == null)
-                    return Forbid();
-
-                _context.Registrations.Remove(registration);
-
-                registration = new Registration
-                {
-                    RegistrationTime = now,
-                    Type = RegistrationType.Airport,
-                    Status = RegistrationStatus.Active,
-                    BookingPassengerId = bookingPassenger.Id,
-                    AirportEmployeeId = airportEmployeeId
-                };
-
-                _context.Registrations.Add(registration);
-
-                await _context.SaveChangesAsync();
-            }
-            else if (registration.Type != RegistrationType.Airport)
-            {
-                TempData["Error"] = "Invalid registration type";
-                return RedirectToAction(nameof(BookingSearch));
+                return RedirectToAction(nameof(SelectSeat), new { id });
             }
 
-            if (registration.SeatId == null)
-            {
-                return RedirectToAction(
-                    nameof(SelectSeat),
-                    new { id = bookingPassenger.Id });
-            }
-
-            return RedirectToAction(
-                nameof(ConfirmRegistration),
-                new { id = bookingPassenger.Id });
+            return RedirectToAction(nameof(ConfirmRegistration), new { id });
         }
 
         [HttpGet]
         public async Task<IActionResult> SelectSeat(int id)
         {
             var now = DateTime.UtcNow;
+            var result = await _registrationService.GetAvailableSeatsAsync(id);
+
+            if (result.Error == RegistrationError.NotFound)
+            {
+                return NotFound();
+            }
+
+            if (!result.Succeeded)
+            {
+                var bookingPassengerPassport = await _context.BookingPassengers
+                    .Include(bp => bp.Passenger)
+                    .FirstOrDefaultAsync(bp => bp.Id == id);
+
+                TempData["ErrorMessage"] = result.Error.ToString();
+                TempData["SearchPassport"] = bookingPassengerPassport!.Passenger.PassportNumber;
+                return RedirectToAction(nameof(BookingSearch));
+            }
 
             var bookingPassenger = await _context.BookingPassengers
                 .Include(bp => bp.Booking)
@@ -278,24 +226,11 @@ namespace AirportPassengerCheckIn.Controllers
                 .Include(bp => bp.Registration)
                 .FirstOrDefaultAsync(bp => bp.Id == id);
 
-            if (bookingPassenger == null)
-            {
-                return NotFound();
-            }
+            
 
             var booking = bookingPassenger.Booking;
             var flight = booking.Flight;
             var registration = bookingPassenger.Registration;
-
-            if (booking.Status != BookingStatus.Confirmed ||
-                flight.DepartureTime <= now ||
-                flight.DepartureTime > now.AddHours(24) ||
-                registration == null ||
-                registration.Status != RegistrationStatus.Active)
-            {
-                TempData["ErrorMessage"] = "You can't continue registration";
-                return RedirectToAction(nameof(BookingSearch));
-            }
 
             var occupiedSeatIds = await _context.Registrations
                 .Where(r =>
@@ -332,9 +267,9 @@ namespace AirportPassengerCheckIn.Controllers
 
                 DepartureTime = localDepartureTime,
 
-                SelectedSeatId = registration.SeatId,
+                SelectedSeatId = registration!.SeatId,
 
-                Seats = flight.Aircraft.Seats
+                Seats = result.Seats
                     .OrderBy(s => s.SeatNumber)
                     .Select(s => new SeatViewModel
                     {
@@ -354,63 +289,42 @@ namespace AirportPassengerCheckIn.Controllers
             int bookingPassengerId,
             int? selectedSeatId)
         {
-            if (selectedSeatId == null)
+            if (!selectedSeatId.HasValue)
             {
-                TempData["ErrorMessage"] = "You have to choose the seat";
-                return RedirectToAction(nameof(SelectSeat), new { id = bookingPassengerId });
+                return RedirectToAction(nameof(SelectSeat),
+                    new { id = bookingPassengerId });
             }
 
-            var now = DateTime.UtcNow;
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var bookingPassenger = await _context.BookingPassengers
-                .Include(bp => bp.Registration)
-                .Include(bp => bp.Booking)
-                    .ThenInclude(b => b.Flight)
-                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+            var result = await _registrationService.SelectSeatAsync(bookingPassengerId, selectedSeatId.Value);
 
-            if (bookingPassenger == null)
-            {
+            if (result.Error == RegistrationError.NotFound)
                 return NotFound();
+
+            if (result.Error == RegistrationError.SeatOccupied)
+            {
+                TempData["ErrorMessage"] = "This seat has been occupied";
+
+                return RedirectToAction(
+                    nameof(SelectSeat),
+                    new { id = bookingPassengerId });
             }
 
-            var booking = bookingPassenger.Booking;
-            var flight = booking.Flight;
-            var registration = bookingPassenger.Registration;
-
-            if (booking.Status != BookingStatus.Confirmed ||
-                flight.DepartureTime <= now ||
-                flight.DepartureTime > now.AddHours(24) ||
-                registration == null ||
-                registration.Status != RegistrationStatus.Active)
+            if (!result.Succeeded)
             {
-                TempData["ErrorMessage"] = "You can't continue registration";
+                var bookingPassengerPassport = await _context.BookingPassengers
+                    .Include(bp => bp.Passenger)
+                    .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+                TempData["ErrorMessage"] = result.Error.ToString();
+                TempData["SearchPassport"] = bookingPassengerPassport!.Passenger.PassportNumber;
                 return RedirectToAction(nameof(BookingSearch));
             }
 
-            var seat = await _context.Seats.FirstOrDefaultAsync(s => s.Id == selectedSeatId);
-            if (seat == null || seat.AircraftId != flight.AircraftId)
-            {
-                TempData["ErrorMessage"] = "This seat is not available";
-                return RedirectToAction(nameof(SelectSeat), new {id=bookingPassengerId});
-            }
 
-            var isOccupied = await _context.Registrations
-                .AnyAsync(r =>
-                    r.BookingPassenger.Booking.Flight.Id == flight.Id &&
-                    r.BookingPassengerId != bookingPassengerId &&
-                    r.SeatId == seat.Id &&
-                    (r.Status == RegistrationStatus.Active || r.Status == RegistrationStatus.Finished));
+            TempData["SuccessMessage"] = "Seat was succesfully selected";
 
-            if (isOccupied)
-            {
-                TempData["ErrorMessaga"] = "This seat is already occupied";
-                return RedirectToAction(nameof(SelectSeat), new {id=bookingPassengerId});
-            }
-
-            registration.SeatId = seat.Id;
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"The seat {seat.SeatNumber} has been choosen completly";
             return RedirectToAction(nameof(ConfirmRegistration), new { id = bookingPassengerId });
         }
 
@@ -491,71 +405,34 @@ namespace AirportPassengerCheckIn.Controllers
         [HttpPost]
         public async Task<IActionResult> Finish(int bookingPassengerId)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var now = DateTime.UtcNow;
 
-            var bookingPassenger = await _context.BookingPassengers
-                .Include(bp => bp.Booking)
-                    .ThenInclude(b => b.Flight)
-                .Include(bp => bp.Registration)
-                    .ThenInclude(r => r!.Seat)
-                .Include(bp => bp.Passenger)
-                .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+            var result = await _registrationService.FinishRegistrationAsync(bookingPassengerId);
 
-            if (bookingPassenger == null)
-            {
+            if (result.Error == RegistrationError.NotFound)
                 return NotFound();
-            }
 
-            var booking = bookingPassenger.Booking;
-            var flight = booking.Flight;
-            var registration = bookingPassenger.Registration;
-
-            if (booking.Status != BookingStatus.Confirmed ||
-                registration == null ||
-                registration.Type != RegistrationType.Airport ||
-                registration.Status != RegistrationStatus.Active ||
-                registration.SeatId == null ||
-                flight.DepartureTime <= now ||
-                flight.DepartureTime > now.AddHours(24))
+            if (result.Error == RegistrationError.SeatNotSelected)
             {
-                TempData["ErrorMessage"] = "Can't finish the registration";
-                return RedirectToAction(nameof(BookingSearch));
-            }
-
-            var seat = await _context.Seats
-                .FirstOrDefaultAsync(s => s.Id == registration.SeatId);
-
-            if (seat == null || seat.AircraftId != flight.AircraftId)
-            {
-                TempData["ErrorMessage"] = "Seat is not available";
-                return RedirectToAction(nameof(SelectSeat), new {id=bookingPassengerId});
-            }
-
-            var isOccupied = await _context.Registrations
-                .AnyAsync(r =>
-                    r.BookingPassenger.Booking.FlightId == flight.Id &&
-                    r.BookingPassengerId != bookingPassengerId &&
-                    r.SeatId == registration.SeatId &&
-                    (r.Status == RegistrationStatus.Active ||
-                     r.Status == RegistrationStatus.Finished));
-
-            if (isOccupied)
-            {
-                TempData["ErrorMessage"] =
-                    "This seat is already occupied";
-
                 return RedirectToAction(
                     nameof(SelectSeat),
                     new { id = bookingPassengerId });
             }
 
-            registration.Status = RegistrationStatus.Finished;
-            await _context.SaveChangesAsync();
+            var bookingPassengerPassport = await _context.BookingPassengers
+                    .Include(bp => bp.Passenger)
+                    .FirstOrDefaultAsync(bp => bp.Id == bookingPassengerId);
+
+            TempData["SearchPassport"] = bookingPassengerPassport!.Passenger.PassportNumber;
+
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = result.Error.ToString();
+                return RedirectToAction(nameof(BookingSearch));
+            }
 
             TempData["SuccessMessage"] = "Registartion has been completed succesfully";
-
-            TempData["SearchPassport"] = bookingPassenger.Passenger.PassportNumber;
-
             return RedirectToAction(nameof(BookingSearch));
         }
 
@@ -619,62 +496,28 @@ namespace AirportPassengerCheckIn.Controllers
         public async Task<IActionResult> AddBaggage(BaggageViewModel model)
         {
             var now = DateTime.UtcNow;
+            var result = await _registrationService.AddBaggage(model.BookingPassengerId, model);
 
-            var bookingPassenger = await _context.BookingPassengers
-                .Include(bp => bp.Booking)
-                    .ThenInclude(b => b.Flight)
-                .Include(bp => bp.Registration)
-                    .ThenInclude(r => r!.Baggages)
-                .FirstOrDefaultAsync(bp => bp.Id == model.BookingPassengerId);
-
-            if (bookingPassenger == null)
+            if (result.Error == RegistrationError.NotFound)
                 return NotFound();
 
-            var booking = bookingPassenger.Booking;
-            var registration = bookingPassenger.Registration;
-            var flight = booking.Flight;
+            var bookingPassengerPassport = await _context.BookingPassengers
+                    .Include(bp => bp.Passenger)
+                    .FirstOrDefaultAsync(bp => bp.Id == model.BookingPassengerId);
 
-            if (booking.Status != BookingStatus.Confirmed ||
-                registration == null ||
-                registration.Status != RegistrationStatus.Finished ||
-                flight.DepartureTime <= now)
+            TempData["SearchPassport"] = bookingPassengerPassport!.Passenger.PassportNumber;
+
+            if (!result.Succeeded)
             {
-                TempData["ErrorMessage"] = "Baggage registration is unavailable.";
+                TempData["ErrorMessage"] = result.Error.ToString();
                 return RedirectToAction(nameof(BookingSearch));
             }
 
-            if (bookingPassenger.CountPaidBaggages <= registration.Baggages.Count)
-            {
-                TempData["ErrorMessage"] = "All paid baggage places have already been registered.";
-                return RedirectToAction(nameof(ManageBaggage),
-                    new { id = bookingPassenger.Id });
-            }
-
-            if (model.Weight <= 0 ||
-                model.Weight > flight.MaxBaggageWeight)
-            {
-                TempData["ErrorMessage"] =
-                    $"Baggage weight must be greater than 0 and not exceed {flight.MaxBaggageWeight} kg.";
-
-                return RedirectToAction(nameof(ManageBaggage),
-                    new { id = bookingPassenger.Id });
-            }
-
-            var baggage = new Baggage
-            {
-                Weight = model.Weight,
-                IsOversized = model.IsOversized,
-                RegistrationId = registration.Id
-            };
-
-            _context.Baggages.Add(baggage);
-
-            await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = "Baggage has been registered successfully.";
 
             return RedirectToAction(nameof(ManageBaggage),
-                new { id = bookingPassenger.Id });
+                new { id = model.BookingPassengerId });
         }
     }
 }

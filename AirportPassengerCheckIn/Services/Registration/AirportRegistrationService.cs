@@ -192,12 +192,6 @@ namespace AirportPassengerCheckIn.Services.Registration
                     RegistrationError.RegistrationNotActive);
             }
 
-            if (registration.Type != RegistrationType.Online)
-            {
-                return AvailableSeatsResult.Failure(
-                    RegistrationError.InvalidRegistrationType);
-            }
-
             var flightId = bookingPassenger.Booking.FlightId;
 
             var occupiedSeatIds = await _context.Registrations
@@ -259,11 +253,6 @@ namespace AirportPassengerCheckIn.Services.Registration
             {
                 return RegistrationResult.Failure(
                     RegistrationError.RegistrationNotActive);
-            }
-
-            if (registration.Type != RegistrationType.Online)
-            {
-                return RegistrationResult.Failure(RegistrationError.InvalidRegistrationType);
             }
 
             var seat = await _context.Seats.FirstOrDefaultAsync(
@@ -345,12 +334,6 @@ namespace AirportPassengerCheckIn.Services.Registration
             {
                 return RegistrationResult.Failure(
                     RegistrationError.RegistrationNotActive);
-            }
-
-            if (registration.Type != RegistrationType.Online)
-            {
-                return RegistrationResult.Failure(
-                    RegistrationError.InvalidRegistrationType);
             }
 
             if (registration.SeatId == null)

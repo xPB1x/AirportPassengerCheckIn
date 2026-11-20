@@ -34,6 +34,7 @@ namespace AirportPassengerCheckIn
             builder.Services.AddScoped<BookingNumberGenerator>();
             builder.Services.AddScoped<BookingService>();
             builder.Services.AddScoped<IOnlineRegistrationService, OnlineRegistrationService>();
+            builder.Services.AddScoped<IAirportRegistrationService, AirportRegistrationService>();
 
             var app = builder.Build();
 
