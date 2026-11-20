@@ -4,24 +4,24 @@
     {
         public class ContinueOnlineRegistrationResult
         {
-            public OnlineRegistrationError Error { get; set; }
+            public RegistrationError Error { get; set; }
 
-            public OnlineRegistrationStep? NextStep { get; set; }
+            public RegistrationStep? NextStep { get; set; }
 
-            public bool Succeeded => Error == OnlineRegistrationError.None;
+            public bool Succeeded => Error == RegistrationError.None;
 
             public static ContinueOnlineRegistrationResult Success(
-                OnlineRegistrationStep nextStep)
+                RegistrationStep nextStep)
             {
                 return new ContinueOnlineRegistrationResult
                 {
-                    Error = OnlineRegistrationError.None,
+                    Error = RegistrationError.None,
                     NextStep = nextStep
                 };
             }
 
             public static ContinueOnlineRegistrationResult Failure(
-                OnlineRegistrationError error)
+                RegistrationError error)
             {
                 return new ContinueOnlineRegistrationResult
                 {

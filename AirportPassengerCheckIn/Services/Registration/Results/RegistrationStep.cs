@@ -1,6 +1,6 @@
 ﻿namespace AirportPassengerCheckIn.Services.Registration.Results
 {
-    public enum OnlineRegistrationStep
+    public enum RegistrationStep
     {
         SelectSeat,
         Confirm

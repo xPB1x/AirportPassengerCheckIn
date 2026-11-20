@@ -57,7 +57,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.StartRegistrationAsync("test-user", bookingPassenger.Id+1);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.NotFound));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.NotFound));
         }
         [Test]
         public async Task StartRegistrationAsync_OtherUser_ShouldReturnsNotFound()
@@ -76,7 +76,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.StartRegistrationAsync("another-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.NotFound));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.NotFound));
         }
 
         [Test]
@@ -101,17 +101,17 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.StartRegistrationAsync("test-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.BookingNotConfirmed));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.BookingNotConfirmed));
         }
 
-        [TestCase(12, OnlineRegistrationError.None)]
-        [TestCase(25, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(-1, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(0, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(24, OnlineRegistrationError.None)]
+        [TestCase(12, RegistrationError.None)]
+        [TestCase(25, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(-1, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(0, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(24, RegistrationError.None)]
         public async Task StartRegistrationAsync_ChecksRegistrationWindow(
             int hoursUntilDeparture,
-            OnlineRegistrationError expectedError)
+            RegistrationError expectedError)
         {
             using var factory = new TestDbContextFactory();
             await factory.InitializeAsync();
@@ -156,7 +156,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.StartRegistrationAsync("test-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.RegistrationAlreadyExists));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.RegistrationAlreadyExists));
         }
     }
 }

@@ -41,7 +41,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
             var result = await service.GetContinueStepOnlineAsync("test-user", bookingPassenger.Id);
 
             Assert.That(result.Succeeded, Is.EqualTo(true));
-            Assert.That(result.NextStep, Is.EqualTo(OnlineRegistrationStep.SelectSeat));
+            Assert.That(result.NextStep, Is.EqualTo(RegistrationStep.SelectSeat));
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
             var result = await service.GetContinueStepOnlineAsync("test-user", bookingPassenger.Id);
 
             Assert.That(result.Succeeded, Is.EqualTo(true));
-            Assert.That(result.NextStep, Is.EqualTo(OnlineRegistrationStep.Confirm));
+            Assert.That(result.NextStep, Is.EqualTo(RegistrationStep.Confirm));
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.GetContinueStepOnlineAsync("test-user", bookingPassenger.Id + 1);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.NotFound));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.NotFound));
         }
         [Test]
         public async Task GetContinueStepOnlineAsync_OtherUser_ShouldReturnsNotFound()
@@ -136,7 +136,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.GetContinueStepOnlineAsync("another-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.NotFound));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.NotFound));
         }
 
         [Test]
@@ -170,17 +170,17 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.GetContinueStepOnlineAsync("test-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.BookingNotConfirmed));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.BookingNotConfirmed));
         }
 
-        [TestCase(12, OnlineRegistrationError.None)]
-        [TestCase(25, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(-1, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(0, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(24, OnlineRegistrationError.None)]
+        [TestCase(12, RegistrationError.None)]
+        [TestCase(25, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(-1, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(0, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(24, RegistrationError.None)]
         public async Task GetContinueStepOnlineAsync_ChecksRegistrationWindow(
             int hoursUntilDeparture,
-            OnlineRegistrationError expectedError)
+            RegistrationError expectedError)
         {
             using var factory = new TestDbContextFactory();
             await factory.InitializeAsync();

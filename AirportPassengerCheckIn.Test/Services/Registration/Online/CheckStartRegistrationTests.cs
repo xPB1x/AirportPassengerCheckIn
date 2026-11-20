@@ -10,14 +10,14 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
     [TestFixture]
     internal class CheckStartRegistrationTests
     {
-        [TestCase(12, OnlineRegistrationError.None)]
-        [TestCase(25, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(-1, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(0, OnlineRegistrationError.RegistrationWindowClosed)]
-        [TestCase(24, OnlineRegistrationError.None)]
+        [TestCase(12, RegistrationError.None)]
+        [TestCase(25, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(-1, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(0, RegistrationError.RegistrationWindowClosed)]
+        [TestCase(24, RegistrationError.None)]
         public async Task CheckStartRegistrationAsync_ChecksRegistrationWindow(
             int hoursUntilDeparture,
-            OnlineRegistrationError expectedError)
+            RegistrationError expectedError)
         {
             using var factory = new TestDbContextFactory();
             await factory.InitializeAsync();
@@ -52,7 +52,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.CheckStartRegistrationAsync("another-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.NotFound));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.NotFound));
         }
 
         [Test]
@@ -74,7 +74,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.CheckStartRegistrationAsync("test-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.BookingNotConfirmed));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.BookingNotConfirmed));
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace AirportPassengerCheckIn.Test.Services.Registration.Online
 
             var result = await service.CheckStartRegistrationAsync("test-user", bookingPassenger.Id);
 
-            Assert.That(result.Error, Is.EqualTo(OnlineRegistrationError.RegistrationAlreadyActive));
+            Assert.That(result.Error, Is.EqualTo(RegistrationError.RegistrationAlreadyActive));
         }
     }
 }

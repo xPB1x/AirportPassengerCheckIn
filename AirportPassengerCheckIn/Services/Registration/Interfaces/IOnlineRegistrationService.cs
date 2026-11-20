@@ -5,10 +5,10 @@ namespace AirportPassengerCheckIn.Services.Registration.Interfaces
 {
     public interface IOnlineRegistrationService
     {
-        Task<OnlineRegistrationResult> CheckStartRegistrationAsync(
+        Task<RegistrationResult> CheckStartRegistrationAsync(
             string userId, int bookingPassengerId);
 
-        Task<OnlineRegistrationResult> StartRegistrationAsync(
+        Task<RegistrationResult> StartRegistrationAsync(
             string userId, int bookingPassengerId);
 
         Task<ContinueOnlineRegistrationResult> GetContinueStepOnlineAsync(
@@ -17,10 +17,10 @@ namespace AirportPassengerCheckIn.Services.Registration.Interfaces
         Task<AvailableSeatsResult> GetAvailableSeatsAsync(
             string userId, int bookingPassengerId);
 
-        Task<OnlineRegistrationResult> SelectSeatAsync(
+        Task<RegistrationResult> SelectSeatAsync(
             string userId, int bookingPassengerId, int selectedSeatId);
 
-        Task<OnlineRegistrationResult> FinishRegistrationAsync(
+        Task<RegistrationResult> FinishRegistrationAsync(
             string userId, int bookingPassengerId);
     }
 }

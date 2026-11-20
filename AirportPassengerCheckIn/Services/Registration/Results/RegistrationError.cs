@@ -1,6 +1,6 @@
 ﻿namespace AirportPassengerCheckIn.Services.Registration.Results
 {
-    public enum OnlineRegistrationError
+    public enum RegistrationError
     {
         None,
         NotFound,

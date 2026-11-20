@@ -4,24 +4,24 @@ namespace AirportPassengerCheckIn.Services.Registration.Results
 {
     public class AvailableSeatsResult
     {
-        public OnlineRegistrationError Error { get; set; }
+        public RegistrationError Error { get; set; }
 
         public List<AvailableSeat> Seats { get; set; } = new();
 
-        public bool Succeeded => Error == OnlineRegistrationError.None;
+        public bool Succeeded => Error == RegistrationError.None;
 
         public static AvailableSeatsResult Success(
             List<AvailableSeat> seats)
         {
             return new AvailableSeatsResult
             {
-                Error = OnlineRegistrationError.None,
+                Error = RegistrationError.None,
                 Seats = seats
             };
         }
 
         public static AvailableSeatsResult Failure(
-            OnlineRegistrationError error)
+            RegistrationError error)
         {
             return new AvailableSeatsResult
             {

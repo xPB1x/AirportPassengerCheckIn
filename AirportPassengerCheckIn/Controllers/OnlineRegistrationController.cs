@@ -114,11 +114,11 @@ namespace AirportPassengerCheckIn.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _registrationService.CheckStartRegistrationAsync(userId!, id);
-            if (result.Error == OnlineRegistrationError.NotFound)
+            if (result.Error == RegistrationError.NotFound)
             {
                 return NotFound();
             }
-            if (result.Error == OnlineRegistrationError.RegistrationAlreadyActive)
+            if (result.Error == RegistrationError.RegistrationAlreadyActive)
             {
                 return RedirectToAction(nameof(ContinueOnline), new { id });
             }
@@ -175,12 +175,12 @@ namespace AirportPassengerCheckIn.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _registrationService.StartRegistrationAsync(userId!, bookingPassengerId);
 
-            if (result.Error == OnlineRegistrationError.NotFound)
+            if (result.Error == RegistrationError.NotFound)
             {
                 return NotFound();
             }
 
-            if (result.Error == OnlineRegistrationError.RegistrationAlreadyActive)
+            if (result.Error == RegistrationError.RegistrationAlreadyActive)
                 return RedirectToAction(nameof(ContinueOnline), new { bookingPassengerId });
 
             if (!result.Succeeded)
@@ -196,7 +196,7 @@ namespace AirportPassengerCheckIn.Controllers
 
             var result = await _registrationService.GetContinueStepOnlineAsync(userId!, id);
 
-            if (result.Error == OnlineRegistrationError.NotFound)
+            if (result.Error == RegistrationError.NotFound)
             {
                 return NotFound();
             }
@@ -205,7 +205,7 @@ namespace AirportPassengerCheckIn.Controllers
                 return RedirectToAction(nameof(OnlineBookings));
             }
 
-            if (result.NextStep == OnlineRegistrationStep.SelectSeat)
+            if (result.NextStep == RegistrationStep.SelectSeat)
             {
                 return RedirectToAction(nameof(SelectSeat), new { id });
             }
@@ -219,7 +219,7 @@ namespace AirportPassengerCheckIn.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var result = await _registrationService.GetAvailableSeatsAsync(userId!, id);
 
-            if (result.Error == OnlineRegistrationError.NotFound)
+            if (result.Error == RegistrationError.NotFound)
                 return NotFound();
 
             if (!result.Succeeded)
@@ -315,10 +315,10 @@ namespace AirportPassengerCheckIn.Controllers
 
             var result = await _registrationService.SelectSeatAsync(userId!, bookingPassengerId, selectedSeatId.Value);
 
-            if (result.Error == OnlineRegistrationError.NotFound)
+            if (result.Error == RegistrationError.NotFound)
                 return NotFound();
 
-            if (result.Error == OnlineRegistrationError.SeatOccupied)
+            if (result.Error == RegistrationError.SeatOccupied)
             {
                 TempData["ErrorMessage"] = "This seat has been occupied";
 
@@ -421,10 +421,10 @@ namespace AirportPassengerCheckIn.Controllers
 
             var result = await _registrationService.FinishRegistrationAsync(userId!, bookingPassengerId);
 
-            if (result.Error == OnlineRegistrationError.NotFound)
+            if (result.Error == RegistrationError.NotFound)
                 return NotFound();
 
-            if (result.Error == OnlineRegistrationError.SeatNotSelected)
+            if (result.Error == RegistrationError.SeatNotSelected)
             {
                 return RedirectToAction(
                     nameof(SelectSeat),
