@@ -33,7 +33,7 @@ namespace AirportPassengerCheckIn.Services
 
             if (passportNumbers.Distinct(StringComparer.OrdinalIgnoreCase).Count() != passportNumbers.Count)
             {
-                throw new InvalidOperationException("There shouldnt be identical passpots");
+                throw new InvalidOperationException("There shouldnt be identical passports");
             }
 
             var flight = await _context.Flights
